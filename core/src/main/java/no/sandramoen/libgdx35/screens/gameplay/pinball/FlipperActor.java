@@ -39,12 +39,44 @@ public class FlipperActor extends Actor {
         jointDef.motorSpeed = restSpeed;
         joint = (RevoluteJoint) world.createJoint(jointDef);
 
+        anchorBody.setUserData(this);
+        body.setUserData(this);
+
         syncVisual();
     }
 
+    public void setAnchorY(float y) {
+        float anchorX = anchorBody.getPosition().x;
+        float currentY = anchorBody.getPosition().y;
+
+        if (Math.abs(currentY - y) < 0.0001f) {
+            return;
+        }
+
+        float deltaY = y - currentY;
+        float bodyX = body.getPosition().x;
+        float bodyY = body.getPosition().y;
+        float currentAngle = body.getAngle();
+        float linearVelocityX = body.getLinearVelocity().x;
+        float linearVelocityY = body.getLinearVelocity().y;
+        float angularVelocity = body.getAngularVelocity();
+
+        anchorBody.setTransform(anchorX, y, 0f);
+        body.setTransform(bodyX, bodyY + deltaY, currentAngle);
+        body.setLinearVelocity(linearVelocityX, linearVelocityY);
+        body.setAngularVelocity(angularVelocity);
+    }
+
     public void syncVisual() {
-        float originX = left ? 0f : width;
-        setPosition(body.getPosition().x - originX, body.getPosition().y - height * 0.5f);
+        float anchorX = anchorBody.getPosition().x;
+        float anchorY = anchorBody.getPosition().y;
+
+        if (left) {
+            setPosition(anchorX, anchorY - height * 0.5f);
+        } else {
+            setPosition(anchorX - width, anchorY - height * 0.5f);
+        }
+
         setRotation(body.getAngle() * MathUtils.radiansToDegrees);
     }
 
@@ -67,5 +99,9 @@ public class FlipperActor extends Actor {
         world.destroyJoint(joint);
         world.destroyBody(body);
         world.destroyBody(anchorBody);
+    }
+
+    public Body getBody() {
+        return body;
     }
 }
