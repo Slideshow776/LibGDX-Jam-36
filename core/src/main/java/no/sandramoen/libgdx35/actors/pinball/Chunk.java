@@ -10,6 +10,7 @@ public class Chunk {
     private static final float MINIMUM_BUMPER_WALL_SPACING = 72f;
     private static final float MINIMUM_BUMPER_CENTER_GAP = 8f;
     private static final float MINIMUM_BUMPER_CLIFF_VERTICAL_GAP = 256f;
+    private static final float MINIMUM_BUMPER_CLIFF_HORIZONTAL_GAP = 96f;
 
     private final World world;
     private final Stage stage;
@@ -184,12 +185,15 @@ public class Chunk {
             float cliffBottom = cliff.getY();
             float cliffTop = cliff.getY() + cliff.getHeight();
 
-            boolean horizontalOverlap = bumperRight > cliffLeft && bumperLeft < cliffRight;
-            boolean tooCloseVertically = Math.abs(bumperTop - cliffBottom) < MINIMUM_BUMPER_CLIFF_VERTICAL_GAP
-                || Math.abs(cliffTop - bumperBottom) < MINIMUM_BUMPER_CLIFF_VERTICAL_GAP
-                || (bumperBottom < cliffTop + MINIMUM_BUMPER_CLIFF_VERTICAL_GAP && bumperTop > cliffBottom - MINIMUM_BUMPER_CLIFF_VERTICAL_GAP);
+            boolean horizontalTooClose =
+                bumperRight + MINIMUM_BUMPER_CLIFF_HORIZONTAL_GAP > cliffLeft &&
+                    bumperLeft - MINIMUM_BUMPER_CLIFF_HORIZONTAL_GAP < cliffRight;
 
-            if (horizontalOverlap && tooCloseVertically) {
+            boolean verticalTooClose =
+                bumperTop + MINIMUM_BUMPER_CLIFF_VERTICAL_GAP > cliffBottom &&
+                    bumperBottom - MINIMUM_BUMPER_CLIFF_VERTICAL_GAP < cliffTop;
+
+            if (horizontalTooClose && verticalTooClose) {
                 return false;
             }
         }
