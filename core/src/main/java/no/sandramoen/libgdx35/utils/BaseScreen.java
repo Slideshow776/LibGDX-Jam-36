@@ -4,15 +4,16 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-
 public abstract class BaseScreen implements Screen, InputProcessor {
+
     protected Stage mainStage;
     protected Stage uiStage;
     protected Table uiTable;
@@ -20,14 +21,12 @@ public abstract class BaseScreen implements Screen, InputProcessor {
     private boolean pause;
 
     public BaseScreen() {
-        mainStage = new Stage();
-        mainStage.setViewport(new ExtendViewport(no.sandramoen.libgdx35.utils.BaseGame.WORLD_WIDTH - 1f, no.sandramoen.libgdx35.utils.BaseGame.WORLD_HEIGHT - 1f));
-        mainStage.getCamera().position.add(0.5f, 0.5f, 0f);
+        mainStage = new Stage(new ScreenViewport());
 
         uiTable = new Table();
         uiTable.setFillParent(true);
-        uiStage = new Stage();
-        uiStage.setViewport(new ScreenViewport());
+
+        uiStage = new Stage(new ScreenViewport());
         uiStage.addActor(uiTable);
 
         shape_renderer = new ShapeRenderer();
@@ -37,9 +36,7 @@ public abstract class BaseScreen implements Screen, InputProcessor {
 
     public abstract void initialize();
 
-
     public abstract void update(float delta);
-
 
     @Override
     public void render(float delta) {
@@ -48,17 +45,15 @@ public abstract class BaseScreen implements Screen, InputProcessor {
             update(delta);
         }
 
-        Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        ScreenUtils.clear(Color.WHITE);
 
         mainStage.getViewport().apply();
         mainStage.draw();
 
-        uiStage.act();
+        uiStage.act(delta);
         uiStage.getViewport().apply();
         uiStage.draw();
     }
-
 
     @Override
     public void show() {
@@ -79,10 +74,8 @@ public abstract class BaseScreen implements Screen, InputProcessor {
     @Override
     public void resize(int width, int height) {
         mainStage.getViewport().update(width, height, true);
-        mainStage.getCamera().position.add(0.5f, 0.5f, 0f);
         uiStage.getViewport().update(width, height, true);
     }
-
 
     @Override
     public void pause() {
@@ -94,14 +87,12 @@ public abstract class BaseScreen implements Screen, InputProcessor {
         pause = false;
     }
 
-
     @Override
     public void dispose() {
         shape_renderer.dispose();
         mainStage.dispose();
         uiStage.dispose();
     }
-
 
     @Override
     public boolean keyDown(int keycode) {

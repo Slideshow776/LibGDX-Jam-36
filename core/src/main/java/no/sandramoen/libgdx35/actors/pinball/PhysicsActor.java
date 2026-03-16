@@ -1,0 +1,322 @@
+package no.sandramoen.libgdx35.actors.pinball;
+
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import no.sandramoen.libgdx35.utils.BaseActor;
+import no.sandramoen.libgdx35.utils.BaseGame;
+
+public abstract class PhysicsActor extends BaseActor {
+
+    protected final World world;
+    private boolean syncingFromBody;
+    protected Material material;
+
+    private static ShaderProgram materialShader;
+
+    public PhysicsActor(World world, float x, float y, Material material, Stage stage) {
+        super(x, y, stage);
+        this.world = world;
+        this.material = material == null ? Material.METAL : material;
+    }
+
+    @Override
+    public void setBounds(float x, float y, float width, float height) {
+        boolean positionChanged = getX() != x || getY() != y;
+        boolean sizeChanged = getWidth() != width || getHeight() != height;
+
+        super.setBounds(x, y, width, height);
+
+        if (syncingFromBody) return;
+
+        Body body = getBody();
+        if (body == null) return;
+
+        if (sizeChanged) {
+            updateBodyShape();
+            applyMaterialToBody();
+        }
+
+        if (positionChanged || sizeChanged) {
+            updateBodyTransform();
+        }
+    }
+
+    @Override
+    public void setPosition(float x, float y) {
+        boolean changed = getX() != x || getY() != y;
+        super.setPosition(x, y);
+
+        if (!changed || syncingFromBody) return;
+
+        Body body = getBody();
+        if (body == null) return;
+
+        updateBodyTransform();
+    }
+
+    @Override
+    public void setX(float x) {
+        boolean changed = getX() != x;
+        super.setX(x);
+
+        if (!changed || syncingFromBody) return;
+
+        Body body = getBody();
+        if (body == null) return;
+
+        updateBodyTransform();
+    }
+
+    @Override
+    public void setY(float y) {
+        boolean changed = getY() != y;
+        super.setY(y);
+
+        if (!changed || syncingFromBody) return;
+
+        Body body = getBody();
+        if (body == null) return;
+
+        updateBodyTransform();
+    }
+
+    @Override
+    public void moveBy(float x, float y) {
+        boolean changed = x != 0f || y != 0f;
+        super.moveBy(x, y);
+
+        if (!changed || syncingFromBody) return;
+
+        Body body = getBody();
+        if (body == null) return;
+
+        updateBodyTransform();
+    }
+
+    @Override
+    public void setWidth(float width) {
+        boolean changed = getWidth() != width;
+        super.setWidth(width);
+
+        if (!changed || syncingFromBody) return;
+
+        Body body = getBody();
+        if (body == null) return;
+
+        updateBodyShape();
+        applyMaterialToBody();
+        updateBodyTransform();
+    }
+
+    @Override
+    public void setHeight(float height) {
+        boolean changed = getHeight() != height;
+        super.setHeight(height);
+
+        if (!changed || syncingFromBody) return;
+
+        Body body = getBody();
+        if (body == null) return;
+
+        updateBodyShape();
+        applyMaterialToBody();
+        updateBodyTransform();
+    }
+
+    @Override
+    public void setSize(float width, float height) {
+        boolean changed = getWidth() != width || getHeight() != height;
+        super.setSize(width, height);
+
+        if (!changed || syncingFromBody) return;
+
+        Body body = getBody();
+        if (body == null) return;
+
+        updateBodyShape();
+        applyMaterialToBody();
+        updateBodyTransform();
+    }
+
+    @Override
+    public void sizeBy(float size) {
+        boolean changed = size != 0f;
+        super.sizeBy(size);
+
+        if (!changed || syncingFromBody) return;
+
+        Body body = getBody();
+        if (body == null) return;
+
+        updateBodyShape();
+        applyMaterialToBody();
+        updateBodyTransform();
+    }
+
+    @Override
+    public void sizeBy(float width, float height) {
+        boolean changed = width != 0f || height != 0f;
+        super.sizeBy(width, height);
+
+        if (!changed || syncingFromBody) return;
+
+        Body body = getBody();
+        if (body == null) return;
+
+        updateBodyShape();
+        applyMaterialToBody();
+        updateBodyTransform();
+    }
+
+    @Override
+    public void setRotation(float degrees) {
+        boolean changed = getRotation() != degrees;
+        super.setRotation(degrees);
+
+        if (!changed || syncingFromBody) return;
+
+        Body body = getBody();
+        if (body == null) return;
+
+        updateBodyTransform();
+    }
+
+    @Override
+    public void rotateBy(float amountInDegrees) {
+        boolean changed = amountInDegrees != 0f;
+        super.rotateBy(amountInDegrees);
+
+        if (!changed || syncingFromBody) return;
+
+        Body body = getBody();
+        if (body == null) return;
+
+        updateBodyTransform();
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+
+        Body body = getBody();
+        if (body == null) return;
+
+        float ppm = BaseGame.PIXELS_PER_METER;
+        float px = body.getPosition().x * ppm;
+        float py = body.getPosition().y * ppm;
+        float rotation = body.getAngle() * MathUtils.radiansToDegrees;
+
+        syncingFromBody = true;
+        super.setPosition(px - getWidth() * 0.5f, py - getHeight() * 0.5f);
+        super.setRotation(rotation);
+        syncingFromBody = false;
+    }
+
+    protected void updateBodyTransform() {
+        Body body = getBody();
+        if (body == null) return;
+
+        float centerX = toMeters(getX() + getWidth() * 0.5f);
+        float centerY = toMeters(getY() + getHeight() * 0.5f);
+        float angle = getRotation() * MathUtils.degreesToRadians;
+
+        body.setTransform(centerX, centerY, angle);
+    }
+
+    protected void applyMaterialToBody() {
+        Body body = getBody();
+        if (body == null || material == null) return;
+
+        for (Fixture fixture : body.getFixtureList()) {
+            fixture.setDensity(material.getDensity());
+            fixture.setFriction(material.getFriction());
+            fixture.setRestitution(material.getRestitution());
+        }
+
+        body.resetMassData();
+    }
+
+    protected float toMeters(float pixels) {
+        return pixels / BaseGame.PIXELS_PER_METER;
+    }
+
+    protected float toPixels(float meters) {
+        return meters * BaseGame.PIXELS_PER_METER;
+    }
+
+    @Override
+    public void draw(Batch batch, float parentAlpha) {
+        drawMaterialMasked(batch, getTexture(), parentAlpha, getX(), getY(), getWidth(), getHeight(), getRotation(), false, false);
+    }
+
+    protected void drawMaterialMasked(Batch batch, Texture shapeTexture, float parentAlpha, float x, float y, float width, float height, float rotation, boolean flipX, boolean flipY) {
+        if (shapeTexture == null || material == null) return;
+
+        ShaderProgram shader = getMaterialShader();
+        ShaderProgram previous = batch.getShader();
+
+        batch.flush();
+        batch.setShader(shader);
+
+        material.getTexture().bind(1);
+        shapeTexture.bind(0);
+
+        shader.bind();
+        shader.setUniformi("u_texture", 0);
+        shader.setUniformi("u_materialTexture", 1);
+        shader.setUniformf("u_materialScale", 1f, 1f);
+        shader.setUniformf("u_materialOffset", 0f, 0f);
+        shader.setUniformf("u_materialAlpha", 1f);
+
+        batch.draw(shapeTexture, x, y, width * 0.5f, height * 0.5f, width, height, 1f, 1f, rotation, 0, 0, shapeTexture.getWidth(), shapeTexture.getHeight(), flipX, flipY);
+
+        batch.flush();
+        batch.setShader(previous);
+    }
+
+    public Material getMaterial() {
+        return material;
+    }
+
+    public void setMaterial(Material material) {
+        Material resolved = material == null ? Material.METAL : material;
+        this.material = resolved;
+
+        Body body = getBody();
+        if (body != null) {
+            applyMaterialToBody();
+        }
+    }
+
+    private static ShaderProgram getMaterialShader() {
+        if (materialShader != null) {
+            return materialShader;
+        }
+
+        ShaderProgram.pedantic = false;
+
+        String vertex = "" + "attribute vec4 a_position;\n" + "attribute vec4 a_color;\n" + "attribute vec2 a_texCoord0;\n" + "uniform mat4 u_projTrans;\n" + "varying vec4 v_color;\n" + "varying vec2 v_texCoords;\n" + "void main() {\n" + "    v_color = a_color;\n" + "    v_texCoords = a_texCoord0;\n" + "    gl_Position = u_projTrans * a_position;\n" + "}\n";
+
+        String fragment = "" + "#ifdef GL_ES\n" + "precision mediump float;\n" + "#endif\n" + "varying vec4 v_color;\n" + "varying vec2 v_texCoords;\n" + "uniform sampler2D u_texture;\n" + "uniform sampler2D u_materialTexture;\n" + "uniform vec2 u_materialScale;\n" + "uniform vec2 u_materialOffset;\n" + "uniform float u_materialAlpha;\n" + "void main() {\n" + "    vec4 shape = texture2D(u_texture, v_texCoords);\n" + "    vec2 materialUv = v_texCoords * u_materialScale + u_materialOffset;\n" + "    vec4 material = texture2D(u_materialTexture, materialUv);\n" + "    vec4 result = vec4(material.rgb, shape.a * material.a * u_materialAlpha);\n" + "    gl_FragColor = result * v_color;\n" + "}\n";
+
+        materialShader = new ShaderProgram(vertex, fragment);
+
+        if (!materialShader.isCompiled()) {
+            throw new IllegalStateException(materialShader.getLog());
+        }
+
+        return materialShader;
+    }
+
+    protected abstract Texture getTexture();
+
+    protected abstract void updateBodyShape();
+
+    public abstract Body getBody();
+}
