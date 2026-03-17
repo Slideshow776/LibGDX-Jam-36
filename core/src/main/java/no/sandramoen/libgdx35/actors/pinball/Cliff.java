@@ -2,6 +2,7 @@ package no.sandramoen.libgdx35.actors.pinball;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -18,7 +19,7 @@ public class Cliff extends PhysicsActor {
 
         this.orientation = orientation == null ? Orientation.RIGHT : orientation;
         this.material = material == null ? Material.GUM : material;
-        this.texture = new Texture(Gdx.files.internal(getTexturePath(this.material)));
+        this.texture = material.getCliffTexture();
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
@@ -35,6 +36,7 @@ public class Cliff extends PhysicsActor {
         updateBodyShape();
         updateBodyTransform();
     }
+
 
     @Override
     protected Texture getTexture() {

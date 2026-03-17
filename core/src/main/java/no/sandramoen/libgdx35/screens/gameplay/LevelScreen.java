@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -15,9 +16,9 @@ import no.sandramoen.libgdx35.utils.BaseScreen;
 
 public class LevelScreen extends BaseScreen {
 
-    private static final int CHUNKS_TO_KEEP_BELOW_BALL = 3;
-    private static final float BALL_LAUNCH_SPEED = 10f;
-    private static final float BALL_MIN_UPWARD = 0.65f;
+    private static final int CHUNKS_TO_KEEP_BELOW_BALL = 4;
+    private static final float BALL_LAUNCH_SPEED = 20f;
+    private static final float BALL_MIN_UPWARD = 5.75f;
 
     private Label label;
     private Ball ball;
@@ -29,6 +30,8 @@ public class LevelScreen extends BaseScreen {
     private float wallThickness;
     private float generatedTopY;
     private float failureBottomY;
+    private float startBallY;
+    private float highestBallY;
 
     @Override
     public void initialize() {
@@ -41,23 +44,32 @@ public class LevelScreen extends BaseScreen {
         labelStyle.font.getData().scale(2f);
         labelStyle.fontColor = Color.WHITE;
 
-        label = new Label("Score: 0", labelStyle);
+        label = new Label("Meters Traveled: 0", labelStyle);
         label.setPosition(10f, Gdx.graphics.getHeight() - label.getPrefHeight() - 10f);
         uiStage.addActor(label);
 
         chunkWidth = Gdx.graphics.getWidth();
-        chunkHeight = Gdx.graphics.getHeight();
-        wallThickness = 64f;
+        chunkHeight = 1000;
+        wallThickness = 96;
 
         generateChunk(0f, true);
         generateChunk(chunkHeight, false);
         generateChunk(chunkHeight * 2f, false);
 
         failureBottomY = chunks.first().getBottomY();
+
         ball = new Ball(world, 500f, 500f, 64f, 64f, Material.GUM, mainStage);
+        startBallY = ball.getY();
+        highestBallY = startBallY;
+
         launchBallDiagonally();
 
         mainStage.getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+    }
+
+    @Override
+    public void render(float delta) {
+        super.render(delta);
     }
 
     private void generateChunk(float y, boolean withBottomWall) {
@@ -80,6 +92,8 @@ public class LevelScreen extends BaseScreen {
             ball.setPosition(mouse.x, mouse.y);
             ball.getBody().setLinearVelocity(0f, 0f);
             ball.getBody().setAngularVelocity(0f);
+
+            highestBallY = Math.max(highestBallY, ball.getY());
         }
 
         Chunk activeChunk = getChunkForBallY(ball.getY());
@@ -100,6 +114,10 @@ public class LevelScreen extends BaseScreen {
         unloadChunksBelowBall();
 
         world.step(1f / 120f, 12, 6);
+
+        highestBallY = Math.max(highestBallY, ball.getY());
+        float metersTraveled = Math.max(0f, highestBallY - startBallY);
+        label.setText("Meters Traveled: " + MathUtils.floor(metersTraveled));
 
         if (ball.getY() + ball.getHeight() < failureBottomY) {
             failBall();
@@ -132,6 +150,11 @@ public class LevelScreen extends BaseScreen {
         ball.setPosition(spawnX, spawnY);
         ball.getBody().setLinearVelocity(0f, 0f);
         ball.getBody().setAngularVelocity(0f);
+
+        startBallY = spawnY;
+        highestBallY = spawnY;
+        label.setText("Meters Traveled: 0");
+
         launchBallDiagonally();
 
         OrthographicCamera cam = (OrthographicCamera) mainStage.getCamera();

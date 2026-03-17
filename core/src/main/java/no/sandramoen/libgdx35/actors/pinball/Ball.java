@@ -14,7 +14,7 @@ public class Ball extends PhysicsActor {
         super(world, x, y, material, stage);
 
         this.material = material == null ? Material.METAL : material;
-        this.texture = new Texture(Gdx.files.internal("images/ball.png"));
+        this.texture = material.getBallTexture();
 
         BodyDef def = new BodyDef();
         def.type = BodyDef.BodyType.DynamicBody;

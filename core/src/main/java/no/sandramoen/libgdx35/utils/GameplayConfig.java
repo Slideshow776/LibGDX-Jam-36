@@ -32,7 +32,7 @@ public final class GameplayConfig {
     public static final float PLATFORM_MAX_Y = 13.0f;
     public static final float PLATFORM_MOVE_SPEED = 4.5f;
 
-    public static final String BACKGROUND_PATH = "images/background.png";
+    public static final String BACKGROUND_PATH = "images/included/background.png";
     public static final String BALL_PATH = "images/ball.png";
     public static final String FLIPPER_PATH = "images/flipper.png";
     public static final String PLATFORM_PATH = "images/platform.png";

@@ -31,7 +31,7 @@ public class PlatformBumper extends PhysicsActor {
 
         this.left = left;
         this.material = material == null ? Material.METAL : material;
-        this.texture = new Texture(Gdx.files.internal(this.material.getTexturePath()));
+        this.texture = material.getPlatformTexture();
 
         if (!left) {
             restAngleDeg = 25f;

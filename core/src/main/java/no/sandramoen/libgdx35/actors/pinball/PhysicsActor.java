@@ -252,32 +252,30 @@ public abstract class PhysicsActor extends BaseActor {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        drawMaterialMasked(batch, getTexture(), parentAlpha, getX(), getY(), getWidth(), getHeight(), getRotation(), false, false);
-    }
+        Texture texture = getTexture();
+        if (texture == null) return;
 
-    protected void drawMaterialMasked(Batch batch, Texture shapeTexture, float parentAlpha, float x, float y, float width, float height, float rotation, boolean flipX, boolean flipY) {
-        if (shapeTexture == null || material == null) return;
+        boolean flipX = getScaleX() < 0f;
+        boolean flipY = getScaleY() < 0f;
 
-        ShaderProgram shader = getMaterialShader();
-        ShaderProgram previous = batch.getShader();
-
-        batch.flush();
-        batch.setShader(shader);
-
-        material.getTexture().bind(1);
-        shapeTexture.bind(0);
-
-        shader.bind();
-        shader.setUniformi("u_texture", 0);
-        shader.setUniformi("u_materialTexture", 1);
-        shader.setUniformf("u_materialScale", 1f, 1f);
-        shader.setUniformf("u_materialOffset", 0f, 0f);
-        shader.setUniformf("u_materialAlpha", 1f);
-
-        batch.draw(shapeTexture, x, y, width * 0.5f, height * 0.5f, width, height, 1f, 1f, rotation, 0, 0, shapeTexture.getWidth(), shapeTexture.getHeight(), flipX, flipY);
-
-        batch.flush();
-        batch.setShader(previous);
+        batch.draw(
+            texture,
+            getX(),
+            getY(),
+            getWidth() * 0.5f,
+            getHeight() * 0.5f,
+            getWidth(),
+            getHeight(),
+            Math.abs(getScaleX()),
+            Math.abs(getScaleY()),
+            getRotation(),
+            0,
+            0,
+            texture.getWidth(),
+            texture.getHeight(),
+            flipX,
+            flipY
+        );
     }
 
     public Material getMaterial() {

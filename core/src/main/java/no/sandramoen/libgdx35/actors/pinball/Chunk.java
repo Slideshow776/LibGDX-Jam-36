@@ -8,9 +8,13 @@ import com.badlogic.gdx.utils.Array;
 public class Chunk {
 
     private static final float MINIMUM_BUMPER_WALL_SPACING = 72f;
-    private static final float MINIMUM_BUMPER_CENTER_GAP = 8f;
+    private static final float MINIMUM_BUMPER_CENTER_GAP = 0f;
     private static final float MINIMUM_BUMPER_CLIFF_VERTICAL_GAP = 256f;
     private static final float MINIMUM_BUMPER_CLIFF_HORIZONTAL_GAP = 96f;
+    private static final float BUMPER_RANDOM_SCALE_MIN = 0.9f;
+    private static final float BUMPER_RANDOM_SCALE_MAX = 1.1f;
+    private static final float CLIFF_WALL_INSET = 0f;
+    private static final float WALL_CHUNK_OVERLAP = 36;
 
     private final World world;
     private final Stage stage;
@@ -41,134 +45,122 @@ public class Chunk {
         this.height = height;
         this.wallThickness = wallThickness;
 
-        leftWall = new Wall(world, x, y, wallThickness, height, this.material, stage);
-        rightWall = new Wall(world, x + width - wallThickness, y, wallThickness, height, this.material, stage);
-        bottomWall = withBottomWall ? new Wall(world, x, y, width, wallThickness, this.material, stage) : null;
+        leftWall = new Wall(world, x - 15, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f, this.material, stage);
+        rightWall = new Wall(world, x + width - wallThickness + 15, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f, this.material, stage);
+        rightWall.setOrigin(rightWall.getWidth() * 0.5f, rightWall.getHeight() * 0.5f);
+        rightWall.setScaleX(-1f);
+
+        bottomWall = withBottomWall ? new Wall(world, x - WALL_CHUNK_OVERLAP, y, width + WALL_CHUNK_OVERLAP * 2f, wallThickness, this.material, stage) : null;
 
         generateBumpersAndCliffs();
     }
 
     private void generateBumpersAndCliffs() {
-        float bumperWidth = 280f;
-        float bumperHeight = 64f;
+        float baseBumperWidth = 280f;
+        float baseBumperHeight = 64f;
         float cliffWidth = 128f;
         float cliffHeight = 256f;
         float cliffOffsetY = 256f;
 
         float centerX = x + width * 0.5f;
         float leftMinX = x + wallThickness + MINIMUM_BUMPER_WALL_SPACING;
-        float leftMaxX = centerX - bumperWidth - MINIMUM_BUMPER_CENTER_GAP;
+        float rightMaxXBase = x + width - wallThickness - MINIMUM_BUMPER_WALL_SPACING;
 
-        float rightMinX = centerX + MINIMUM_BUMPER_CENTER_GAP;
-        float rightMaxX = x + width - wallThickness - bumperWidth - MINIMUM_BUMPER_WALL_SPACING;
-
-        if (leftMaxX < leftMinX && rightMaxX < rightMinX) {
-            return;
-        }
-
-        float startY = y + wallThickness + 200f;
-        float endY = y + height - cliffOffsetY - cliffHeight - 96f;
-        float rowSpacing = 360f;
+        float startY = y + wallThickness + 180f;
+        float endY = y + height - cliffOffsetY - cliffHeight - 72f;
+        float rowSpacing = 260f;
 
         if (endY <= startY) {
             return;
         }
 
-        float[] leftLanes = buildLanes(leftMinX, leftMaxX);
-        float[] rightLanes = buildLanes(rightMinX, rightMaxX);
+        int rows = Math.max(2, (int) ((endY - startY) / rowSpacing) + 1);
 
-        int rows = Math.max(1, (int) ((endY - startY) / rowSpacing) + 1);
-
+        int leftLaneCount = 5;
+        int rightLaneCount = 5;
         int lastLeftLane = -1;
         int lastRightLane = -1;
 
         for (int row = 0; row < rows; row++) {
-            float bumperY = Math.min(endY, startY + row * rowSpacing + MathUtils.random(-28f, 28f));
+            float bumperY = Math.min(endY, startY + row * rowSpacing + MathUtils.random(-20f, 20f));
 
-            boolean canSpawnLeft = leftLanes.length > 0;
-            boolean canSpawnRight = rightLanes.length > 0;
+            boolean spawnLeft;
+            boolean spawnRight;
 
-            boolean spawnLeft = false;
-            boolean spawnRight = false;
-
-            switch (row % 4) {
+            switch (row % 3) {
                 case 0:
-                    spawnLeft = canSpawnLeft;
-                    spawnRight = canSpawnRight;
+                    spawnLeft = true;
+                    spawnRight = true;
                     break;
                 case 1:
-                    spawnLeft = canSpawnLeft;
-                    spawnRight = canSpawnRight && MathUtils.randomBoolean(0.35f);
-                    break;
-                case 2:
-                    spawnLeft = canSpawnLeft && MathUtils.randomBoolean(0.35f);
-                    spawnRight = canSpawnRight;
+                    spawnLeft = true;
+                    spawnRight = MathUtils.randomBoolean(0.65f);
                     break;
                 default:
-                    spawnLeft = canSpawnLeft && MathUtils.randomBoolean();
-                    spawnRight = canSpawnRight && !spawnLeft;
-                    break;
-            }
-
-            if (!spawnLeft && !spawnRight) {
-                if (canSpawnLeft && canSpawnRight) {
-                    if (MathUtils.randomBoolean()) spawnLeft = true;
-                    else spawnRight = true;
-                } else if (canSpawnLeft) {
-                    spawnLeft = true;
-                } else if (canSpawnRight) {
+                    spawnLeft = MathUtils.randomBoolean(0.65f);
                     spawnRight = true;
-                }
+                    break;
             }
 
             if (spawnLeft) {
-                int lane = chooseLane(leftLanes.length, lastLeftLane);
-                lastLeftLane = lane;
-                float bumperX = jitterLane(leftLanes[lane], leftMinX, leftMaxX, 18f);
+                float scale = MathUtils.random(BUMPER_RANDOM_SCALE_MIN, BUMPER_RANDOM_SCALE_MAX);
+                float bumperWidth = baseBumperWidth * scale;
+                float bumperHeight = baseBumperHeight * scale;
 
-                if (canPlaceBumper(bumperX, bumperY, bumperWidth, bumperHeight)) {
-                    bumpers.add(new PlatformBumper(world, bumperX, bumperY, bumperWidth, bumperHeight, true, material, stage));
+                float leftMaxX = centerX - bumperWidth - MINIMUM_BUMPER_CENTER_GAP;
+                if (leftMaxX >= leftMinX) {
+                    float[] leftLanes = buildLanes(leftMinX, leftMaxX, leftLaneCount);
+                    int lane = chooseLane(leftLanes.length, lastLeftLane);
+                    lastLeftLane = lane;
+                    float bumperX = jitterLane(leftLanes[lane], leftMinX, leftMaxX, 26f);
 
-                    float cliffY = bumperY + cliffOffsetY;
-                    if (cliffY + cliffHeight <= y + height - 16f) {
-                        cliffs.add(new Cliff(
-                            world,
-                            leftWall.getX() + leftWall.getWidth(),
-                            cliffY,
-                            cliffWidth,
-                            cliffHeight,
-                            Orientation.RIGHT,
-                            material,
-                            stage
-                        ));
+                    if (canPlaceBumper(bumperX, bumperY, bumperWidth, bumperHeight)) {
+                        bumpers.add(new PlatformBumper(world, bumperX, bumperY, bumperWidth, bumperHeight, true, material, stage));
+
+                        if (row % 2 == 0) {
+                            float cliffY = bumperY + cliffOffsetY;
+                            if (cliffY + cliffHeight <= y + height - 16f) {
+                                cliffs.add(new Cliff(world, getLeftInnerWallX() - CLIFF_WALL_INSET - 30, cliffY, cliffWidth, cliffHeight, Orientation.RIGHT, material, stage));
+                            }
+                        }
                     }
                 }
             }
 
             if (spawnRight) {
-                int lane = chooseLane(rightLanes.length, lastRightLane);
-                lastRightLane = lane;
-                float bumperX = jitterLane(rightLanes[lane], rightMinX, rightMaxX, 18f);
+                float scale = MathUtils.random(BUMPER_RANDOM_SCALE_MIN, BUMPER_RANDOM_SCALE_MAX);
+                float bumperWidth = baseBumperWidth * scale;
+                float bumperHeight = baseBumperHeight * scale;
 
-                if (canPlaceBumper(bumperX, bumperY, bumperWidth, bumperHeight)) {
-                    bumpers.add(new PlatformBumper(world, bumperX, bumperY, bumperWidth, bumperHeight, false, material, stage));
+                float rightMinX = centerX + MINIMUM_BUMPER_CENTER_GAP;
+                float rightMaxX = rightMaxXBase - bumperWidth;
+                if (rightMaxX >= rightMinX) {
+                    float[] rightLanes = buildLanes(rightMinX, rightMaxX, rightLaneCount);
+                    int lane = chooseLane(rightLanes.length, lastRightLane);
+                    lastRightLane = lane;
+                    float bumperX = jitterLane(rightLanes[lane], rightMinX, rightMaxX, 26f);
 
-                    float cliffY = bumperY + cliffOffsetY;
-                    if (cliffY + cliffHeight <= y + height - 16f) {
-                        cliffs.add(new Cliff(
-                            world,
-                            rightWall.getX() - cliffWidth,
-                            cliffY,
-                            cliffWidth,
-                            cliffHeight,
-                            Orientation.LEFT,
-                            material,
-                            stage
-                        ));
+                    if (canPlaceBumper(bumperX, bumperY, bumperWidth, bumperHeight)) {
+                        bumpers.add(new PlatformBumper(world, bumperX, bumperY, bumperWidth, bumperHeight, false, material, stage));
+
+                        if (row % 2 == 0) {
+                            float cliffY = bumperY + cliffOffsetY;
+                            if (cliffY + cliffHeight <= y + height - 16f) {
+                                cliffs.add(new Cliff(world, getRightInnerWallX() - cliffWidth + CLIFF_WALL_INSET + 30, cliffY, cliffWidth, cliffHeight, Orientation.LEFT, material, stage));
+                            }
+                        }
                     }
                 }
             }
         }
+    }
+
+    private float getLeftInnerWallX() {
+        return leftWall.getX() + leftWall.getWidth();
+    }
+
+    private float getRightInnerWallX() {
+        return rightWall.getX();
     }
 
     private boolean canPlaceBumper(float bumperX, float bumperY, float bumperWidth, float bumperHeight) {
@@ -185,13 +177,9 @@ public class Chunk {
             float cliffBottom = cliff.getY();
             float cliffTop = cliff.getY() + cliff.getHeight();
 
-            boolean horizontalTooClose =
-                bumperRight + MINIMUM_BUMPER_CLIFF_HORIZONTAL_GAP > cliffLeft &&
-                    bumperLeft - MINIMUM_BUMPER_CLIFF_HORIZONTAL_GAP < cliffRight;
+            boolean horizontalTooClose = bumperRight + MINIMUM_BUMPER_CLIFF_HORIZONTAL_GAP > cliffLeft && bumperLeft - MINIMUM_BUMPER_CLIFF_HORIZONTAL_GAP < cliffRight;
 
-            boolean verticalTooClose =
-                bumperTop + MINIMUM_BUMPER_CLIFF_VERTICAL_GAP > cliffBottom &&
-                    bumperBottom - MINIMUM_BUMPER_CLIFF_VERTICAL_GAP < cliffTop;
+            boolean verticalTooClose = bumperTop + MINIMUM_BUMPER_CLIFF_VERTICAL_GAP > cliffBottom && bumperBottom - MINIMUM_BUMPER_CLIFF_VERTICAL_GAP < cliffTop;
 
             if (horizontalTooClose && verticalTooClose) {
                 return false;
@@ -201,22 +189,26 @@ public class Chunk {
         return true;
     }
 
-    private float[] buildLanes(float minX, float maxX) {
+    private float[] buildLanes(float minX, float maxX, int laneCount) {
         if (maxX < minX) {
             return new float[0];
         }
 
-        float span = maxX - minX;
-
-        if (span < 120f) {
+        if (laneCount <= 1) {
             return new float[]{(minX + maxX) * 0.5f};
         }
 
-        return new float[]{
-            minX + span * 0.18f,
-            minX + span * 0.50f,
-            minX + span * 0.82f
-        };
+        float span = maxX - minX;
+        if (span < 80f) {
+            return new float[]{minX, (minX + maxX) * 0.5f, maxX};
+        }
+
+        float[] lanes = new float[laneCount];
+        for (int i = 0; i < laneCount; i++) {
+            float t = laneCount == 1 ? 0.5f : (float) i / (float) (laneCount - 1);
+            lanes[i] = minX + span * t;
+        }
+        return lanes;
     }
 
     private int chooseLane(int laneCount, int lastLane) {
