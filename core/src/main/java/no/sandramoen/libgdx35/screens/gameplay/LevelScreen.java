@@ -4,9 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -17,10 +17,9 @@ import no.sandramoen.libgdx35.utils.BaseScreen;
 public class LevelScreen extends BaseScreen {
 
     private static final int CHUNKS_TO_KEEP_BELOW_BALL = 4;
-    private static final float BALL_LAUNCH_SPEED = 20f;
-    private static final float BALL_MIN_UPWARD = 5.75f;
+    private static final float BALL_LAUNCH_SPEED = 30f;
+    private static final float BALL_MIN_UPWARD = 10.75f;
 
-    private Label label;
     private Ball ball;
     private World world;
     private Array<Chunk> chunks;
@@ -33,6 +32,9 @@ public class LevelScreen extends BaseScreen {
     private float startBallY;
     private float highestBallY;
 
+    private Label statsLabel;
+    private int coinCount;
+
     @Override
     public void initialize() {
         chunks = new Array<>();
@@ -44,25 +46,27 @@ public class LevelScreen extends BaseScreen {
         labelStyle.font.getData().scale(2f);
         labelStyle.fontColor = Color.WHITE;
 
-        label = new Label("Meters Traveled: 0", labelStyle);
-        label.setPosition(10f, Gdx.graphics.getHeight() - label.getPrefHeight() - 10f);
-        uiStage.addActor(label);
+        statsLabel = new Label("", labelStyle);
+        statsLabel.setPosition(20f, Gdx.graphics.getHeight() - 70f);
+        uiStage.addActor(statsLabel);
 
         chunkWidth = Gdx.graphics.getWidth();
-        chunkHeight = 1000;
-        wallThickness = 96;
+        chunkHeight = 2000f;
+        wallThickness = 96f;
 
-        generateChunk(0f, true);
-        generateChunk(chunkHeight, false);
-        generateChunk(chunkHeight * 2f, false);
+        generateChunk(0f);
+        generateChunk(chunkHeight);
+        generateChunk(chunkHeight * 2f);
 
         failureBottomY = chunks.first().getBottomY();
 
-        ball = new Ball(world, 500f, 500f, 64f, 64f, Material.GUM, mainStage);
+        ball = new Ball(world, chunkWidth * .5f, 1000f, 64f, 64f, Material.GUM, mainStage);
         startBallY = ball.getY();
         highestBallY = startBallY;
+        coinCount = 0;
 
         launchBallDiagonally();
+        updateStatsLabel();
 
         mainStage.getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
     }
@@ -72,15 +76,10 @@ public class LevelScreen extends BaseScreen {
         super.render(delta);
     }
 
-    private void generateChunk(float y, boolean withBottomWall) {
-        Chunk chunk = new Chunk(world, mainStage, 0f, y, chunkWidth, chunkHeight, wallThickness, randomMaterial(), withBottomWall);
+    private void generateChunk(float y) {
+        Chunk chunk = new Chunk(world, mainStage, 0f, y, chunkWidth, chunkHeight, wallThickness);
         chunks.add(chunk);
         generatedTopY = Math.max(generatedTopY, chunk.getTopY());
-    }
-
-    private Material randomMaterial() {
-        Material[] values = Material.values();
-        return values[MathUtils.random(values.length - 1)];
     }
 
     @Override
@@ -108,16 +107,17 @@ public class LevelScreen extends BaseScreen {
         }
 
         while (ball.getY() + Gdx.graphics.getHeight() * 2f > generatedTopY) {
-            generateChunk(generatedTopY, false);
+            generateChunk(generatedTopY);
         }
 
         unloadChunksBelowBall();
 
         world.step(1f / 120f, 12, 6);
 
+        collectCoins();
+
         highestBallY = Math.max(highestBallY, ball.getY());
-        float metersTraveled = Math.max(0f, highestBallY - startBallY);
-        label.setText("Meters Traveled: " + MathUtils.floor(metersTraveled));
+        updateStatsLabel();
 
         if (ball.getY() + ball.getHeight() < failureBottomY) {
             failBall();
@@ -127,6 +127,30 @@ public class LevelScreen extends BaseScreen {
         OrthographicCamera cam = (OrthographicCamera) mainStage.getCamera();
         cam.position.y += (ball.getY() - cam.position.y) * 0.08f;
         cam.update();
+    }
+
+    private void collectCoins() {
+        Rectangle ballBounds = new Rectangle(ball.getX(), ball.getY(), ball.getWidth(), ball.getHeight());
+
+        for (int i = 0; i < chunks.size; i++) {
+            Chunk chunk = chunks.get(i);
+            Array<Coin> coins = chunk.getCoins();
+
+            for (int j = coins.size - 1; j >= 0; j--) {
+                Coin coin = coins.get(j);
+                Rectangle coinBounds = new Rectangle(coin.getX(), coin.getY(), coin.getWidth(), coin.getHeight());
+
+                if (ballBounds.overlaps(coinBounds)) {
+                    chunk.removeCoin(coin);
+                    coinCount++;
+                }
+            }
+        }
+    }
+
+    private void updateStatsLabel() {
+        float metersTraveled = Math.max(0f, highestBallY - startBallY);
+        statsLabel.setText("Meters: " + MathUtils.floor(metersTraveled) + "  Coins: " + coinCount);
     }
 
     private void unloadChunksBelowBall() {
@@ -153,9 +177,9 @@ public class LevelScreen extends BaseScreen {
 
         startBallY = spawnY;
         highestBallY = spawnY;
-        label.setText("Meters Traveled: 0");
 
         launchBallDiagonally();
+        updateStatsLabel();
 
         OrthographicCamera cam = (OrthographicCamera) mainStage.getCamera();
         cam.position.y = spawnY;

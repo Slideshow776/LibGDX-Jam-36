@@ -48,6 +48,10 @@ public enum Material {
         this.cliffPath = cliffPath;
     }
 
+    public static Material getRandomMaterial() {
+        return Material.values()[(int) (Math.random() * Material.values().length)];
+    }
+
     public float getDensity() {
         return density;
     }

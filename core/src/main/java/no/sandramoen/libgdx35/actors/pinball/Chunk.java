@@ -4,23 +4,28 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
+import no.sandramoen.libgdx35.utils.BaseActor;
 
 public class Chunk {
 
-    private static final float MINIMUM_BUMPER_WALL_SPACING = 72f;
-    private static final float MINIMUM_BUMPER_CENTER_GAP = 0f;
-    private static final float MINIMUM_BUMPER_CLIFF_VERTICAL_GAP = 256f;
-    private static final float MINIMUM_BUMPER_CLIFF_HORIZONTAL_GAP = 96f;
-    private static final float BUMPER_RANDOM_SCALE_MIN = 0.9f;
-    private static final float BUMPER_RANDOM_SCALE_MAX = 1.1f;
-    private static final float CLIFF_WALL_INSET = 0f;
-    private static final float WALL_CHUNK_OVERLAP = 36;
+    private static final float CLIFF_WALL_INSET = 15f;
+    private static final float WALL_CHUNK_OVERLAP = 24f;
+    private static final float START_Y_OFFSET = 180f;
+    private static final float INITIAL_BUMPER_WIDTH = 280f;
+    private static final float INITIAL_BUMPER_HEIGHT = 64f;
+    private static final float INITIAL_CLIFF_WIDTH = 168f;
+    private static final float INITIAL_CLIFF_HEIGHT = 256f;
+
+    private static final float COIN_WIDTH = 48f;
+    private static final float COIN_HEIGHT = 48f;
+    private static final float COIN_PADDING = 18f;
+    private static final int MIN_COINS = 5;
+    private static final int MAX_COINS = 15;
+    private static final int MAX_COIN_ATTEMPTS = 200;
 
     private final World world;
     private final Stage stage;
-    private final Material material;
 
-    private final float x;
     private final float y;
     private final float width;
     private final float height;
@@ -28,131 +33,170 @@ public class Chunk {
 
     private final Wall leftWall;
     private final Wall rightWall;
-    private final Wall bottomWall;
 
     private final Array<Cliff> cliffs = new Array<>();
     private final Array<PlatformBumper> bumpers = new Array<>();
+    private final Array<Coin> coins = new Array<>();
+
+    private PlacementState state = PlacementState.values()[MathUtils.random(2)];
 
     private boolean disposed;
 
-    public Chunk(World world, Stage stage, float x, float y, float width, float height, float wallThickness, Material material, boolean withBottomWall) {
+    public Chunk(World world, Stage stage, float x, float y, float width, float height, float wallThickness) {
         this.world = world;
         this.stage = stage;
-        this.material = material == null ? Material.GUM : material;
-        this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.wallThickness = wallThickness;
 
-        leftWall = new Wall(world, x - 15, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f, this.material, stage);
-        rightWall = new Wall(world, x + width - wallThickness + 15, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f, this.material, stage);
+        leftWall = new Wall(world, x - CLIFF_WALL_INSET, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f, Material.getRandomMaterial(), stage);
+        rightWall = new Wall(world, x + width - wallThickness + CLIFF_WALL_INSET, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f, Material.getRandomMaterial(), stage);
         rightWall.setOrigin(rightWall.getWidth() * 0.5f, rightWall.getHeight() * 0.5f);
         rightWall.setScaleX(-1f);
 
-        bottomWall = withBottomWall ? new Wall(world, x - WALL_CHUNK_OVERLAP, y, width + WALL_CHUNK_OVERLAP * 2f, wallThickness, this.material, stage) : null;
-
         generateBumpersAndCliffs();
+        generateCoins();
     }
 
     private void generateBumpersAndCliffs() {
-        float baseBumperWidth = 280f;
-        float baseBumperHeight = 64f;
-        float cliffWidth = 128f;
-        float cliffHeight = 256f;
-        float cliffOffsetY = 256f;
+        int rows = MathUtils.random(8, 16);
+        float currentY = y + START_Y_OFFSET;
 
-        float centerX = x + width * 0.5f;
-        float leftMinX = x + wallThickness + MINIMUM_BUMPER_WALL_SPACING;
-        float rightMaxXBase = x + width - wallThickness - MINIMUM_BUMPER_WALL_SPACING;
+        for (int i = 0; i < rows; i++) {
+            float cliffWidth = INITIAL_CLIFF_WIDTH * MathUtils.random(1.0f, 1.5f);
+            float cliffHeight = INITIAL_CLIFF_HEIGHT * MathUtils.random(1.0f, 1.5f);
+            float insideWidth = (width * .5f) - (wallThickness * 2f) - (cliffWidth * 2f);
+            float bumperWidth = INITIAL_BUMPER_WIDTH * MathUtils.random(0.9f, 1.1f);
+            float bumperHeight = INITIAL_BUMPER_HEIGHT * MathUtils.random(0.9f, 1.1f);
+            float leftPadding = getLeftInnerWallX() + cliffWidth;
+            float rightPadding = getRightInnerWallX() - cliffWidth - bumperWidth;
 
-        float startY = y + wallThickness + 180f;
-        float endY = y + height - cliffOffsetY - cliffHeight - 72f;
-        float rowSpacing = 260f;
+            switch (state) {
+                case LEFT_BUMPER:
+                    float bumperX = leftPadding + MathUtils.random(insideWidth);
+                    bumpers.add(new PlatformBumper(world, bumperX, currentY, bumperWidth, bumperHeight, true, Material.getRandomMaterial(), stage));
+                    currentY += bumperHeight * 2f;
+                    break;
 
-        if (endY <= startY) {
+                case RIGHT_BUMPER:
+                    bumperX = rightPadding - MathUtils.random(insideWidth);
+                    bumpers.add(new PlatformBumper(world, bumperX, currentY, bumperWidth, bumperHeight, false, Material.getRandomMaterial(), stage));
+                    currentY += bumperHeight * 2f;
+                    break;
+
+                case DOUBLE_BUMPER:
+                    bumperX = leftPadding + MathUtils.random(insideWidth);
+                    bumpers.add(new PlatformBumper(world, bumperX, currentY, bumperWidth, bumperHeight, true, Material.getRandomMaterial(), stage));
+
+                    bumperX = rightPadding - MathUtils.random(insideWidth);
+                    bumpers.add(new PlatformBumper(world, bumperX, currentY, bumperWidth, bumperHeight, false, Material.getRandomMaterial(), stage));
+                    currentY += bumperHeight * 2f;
+                    state = MathUtils.randomBoolean() ? PlacementState.LEFT_CLIFF : PlacementState.RIGHT_CLIFF;
+                    continue;
+
+                case LEFT_CLIFF:
+                    cliffs.add(new Cliff(world, getLeftInnerWallX() - CLIFF_WALL_INSET - 30f, currentY, cliffWidth, cliffHeight, Orientation.RIGHT, Material.getRandomMaterial(), stage));
+                    currentY += cliffHeight * 2f;
+                    break;
+
+                case RIGHT_CLIFF:
+                    cliffs.add(new Cliff(world, getRightInnerWallX() - cliffWidth + CLIFF_WALL_INSET + 30f, currentY, cliffWidth, cliffHeight, Orientation.LEFT, Material.getRandomMaterial(), stage));
+                    currentY += cliffHeight * 2f;
+                    break;
+            }
+
+            if (currentY >= getTopY() - 100f) {
+                break;
+            }
+
+            PlacementRule rule = PlacementRule.getRule(state);
+            if (rule == null || rule.getAllowed() == null || rule.getAllowed().length == 0) {
+                break;
+            }
+
+            PlacementState[] allowed = rule.getAllowed();
+            state = allowed[MathUtils.random(allowed.length - 1)];
+        }
+    }
+
+    private void generateCoins() {
+        float minX = getLeftInnerWallX() + COIN_PADDING;
+        float maxX = getRightInnerWallX() - COIN_WIDTH - COIN_PADDING;
+        float minY = getBottomY() + COIN_PADDING;
+        float maxY = getTopY() - COIN_HEIGHT - COIN_PADDING;
+
+        if (maxX <= minX || maxY <= minY) {
             return;
         }
 
-        int rows = Math.max(2, (int) ((endY - startY) / rowSpacing) + 1);
+        int targetCoins = MathUtils.random(MIN_COINS, MAX_COINS);
+        int attempts = 0;
 
-        int leftLaneCount = 5;
-        int rightLaneCount = 5;
-        int lastLeftLane = -1;
-        int lastRightLane = -1;
+        while (coins.size < targetCoins && attempts < MAX_COIN_ATTEMPTS) {
+            attempts++;
 
-        for (int row = 0; row < rows; row++) {
-            float bumperY = Math.min(endY, startY + row * rowSpacing + MathUtils.random(-20f, 20f));
+            float coinX = MathUtils.random(minX, maxX);
+            float coinY = MathUtils.random(minY, maxY);
 
-            boolean spawnLeft;
-            boolean spawnRight;
-
-            switch (row % 3) {
-                case 0:
-                    spawnLeft = true;
-                    spawnRight = true;
-                    break;
-                case 1:
-                    spawnLeft = true;
-                    spawnRight = MathUtils.randomBoolean(0.65f);
-                    break;
-                default:
-                    spawnLeft = MathUtils.randomBoolean(0.65f);
-                    spawnRight = true;
-                    break;
+            if (!canPlaceCoin(coinX, coinY)) {
+                continue;
             }
 
-            if (spawnLeft) {
-                float scale = MathUtils.random(BUMPER_RANDOM_SCALE_MIN, BUMPER_RANDOM_SCALE_MAX);
-                float bumperWidth = baseBumperWidth * scale;
-                float bumperHeight = baseBumperHeight * scale;
-
-                float leftMaxX = centerX - bumperWidth - MINIMUM_BUMPER_CENTER_GAP;
-                if (leftMaxX >= leftMinX) {
-                    float[] leftLanes = buildLanes(leftMinX, leftMaxX, leftLaneCount);
-                    int lane = chooseLane(leftLanes.length, lastLeftLane);
-                    lastLeftLane = lane;
-                    float bumperX = jitterLane(leftLanes[lane], leftMinX, leftMaxX, 26f);
-
-                    if (canPlaceBumper(bumperX, bumperY, bumperWidth, bumperHeight)) {
-                        bumpers.add(new PlatformBumper(world, bumperX, bumperY, bumperWidth, bumperHeight, true, material, stage));
-
-                        if (row % 2 == 0) {
-                            float cliffY = bumperY + cliffOffsetY;
-                            if (cliffY + cliffHeight <= y + height - 16f) {
-                                cliffs.add(new Cliff(world, getLeftInnerWallX() - CLIFF_WALL_INSET - 30, cliffY, cliffWidth, cliffHeight, Orientation.RIGHT, material, stage));
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (spawnRight) {
-                float scale = MathUtils.random(BUMPER_RANDOM_SCALE_MIN, BUMPER_RANDOM_SCALE_MAX);
-                float bumperWidth = baseBumperWidth * scale;
-                float bumperHeight = baseBumperHeight * scale;
-
-                float rightMinX = centerX + MINIMUM_BUMPER_CENTER_GAP;
-                float rightMaxX = rightMaxXBase - bumperWidth;
-                if (rightMaxX >= rightMinX) {
-                    float[] rightLanes = buildLanes(rightMinX, rightMaxX, rightLaneCount);
-                    int lane = chooseLane(rightLanes.length, lastRightLane);
-                    lastRightLane = lane;
-                    float bumperX = jitterLane(rightLanes[lane], rightMinX, rightMaxX, 26f);
-
-                    if (canPlaceBumper(bumperX, bumperY, bumperWidth, bumperHeight)) {
-                        bumpers.add(new PlatformBumper(world, bumperX, bumperY, bumperWidth, bumperHeight, false, material, stage));
-
-                        if (row % 2 == 0) {
-                            float cliffY = bumperY + cliffOffsetY;
-                            if (cliffY + cliffHeight <= y + height - 16f) {
-                                cliffs.add(new Cliff(world, getRightInnerWallX() - cliffWidth + CLIFF_WALL_INSET + 30, cliffY, cliffWidth, cliffHeight, Orientation.LEFT, material, stage));
-                            }
-                        }
-                    }
-                }
-            }
+            coins.add(new Coin(coinX, coinY, COIN_WIDTH, COIN_HEIGHT, stage));
         }
+    }
+
+    private boolean canPlaceCoin(float x, float y) {
+        if (overlapsRotated(leftWall, x, y, COIN_WIDTH, COIN_HEIGHT, COIN_PADDING)) return false;
+        if (overlapsRotated(rightWall, x, y, COIN_WIDTH, COIN_HEIGHT, COIN_PADDING)) return false;
+
+        for (int i = 0; i < bumpers.size; i++) {
+            if (overlapsRotated(bumpers.get(i), x, y, COIN_WIDTH, COIN_HEIGHT, COIN_PADDING + 14f)) return false;
+        }
+
+        for (int i = 0; i < cliffs.size; i++) {
+            if (overlapsRotated(cliffs.get(i), x, y, COIN_WIDTH, COIN_HEIGHT, COIN_PADDING + 10f)) return false;
+        }
+
+        for (int i = 0; i < coins.size; i++) {
+            if (overlapsRotated(coins.get(i), x, y, COIN_WIDTH, COIN_HEIGHT, COIN_PADDING)) return false;
+        }
+
+        return true;
+    }
+
+    private boolean overlapsRotated(BaseActor actor, float x, float y, float width, float height, float padding) {
+        if (actor == null) return false;
+
+        float actorCenterX = actor.getX() + actor.getWidth() * 0.5f;
+        float actorCenterY = actor.getY() + actor.getHeight() * 0.5f;
+
+        float coinCenterX = x + width * 0.5f;
+        float coinCenterY = y + height * 0.5f;
+
+        float radians = -actor.getRotation() * MathUtils.degreesToRadians;
+        float cos = (float) Math.cos(radians);
+        float sin = (float) Math.sin(radians);
+
+        float dx = coinCenterX - actorCenterX;
+        float dy = coinCenterY - actorCenterY;
+
+        float localX = dx * cos - dy * sin;
+        float localY = dx * sin + dy * cos;
+
+        float halfW = actor.getWidth() * 0.5f + padding;
+        float halfH = actor.getHeight() * 0.5f + padding;
+
+        float closestX = MathUtils.clamp(localX, -halfW, halfW);
+        float closestY = MathUtils.clamp(localY, -halfH, halfH);
+
+        float diffX = localX - closestX;
+        float diffY = localY - closestY;
+
+        float coinRadius = Math.max(width, height) * 0.5f;
+
+        return diffX * diffX + diffY * diffY < coinRadius * coinRadius;
     }
 
     private float getLeftInnerWallX() {
@@ -163,68 +207,10 @@ public class Chunk {
         return rightWall.getX();
     }
 
-    private boolean canPlaceBumper(float bumperX, float bumperY, float bumperWidth, float bumperHeight) {
-        float bumperLeft = bumperX;
-        float bumperRight = bumperX + bumperWidth;
-        float bumperBottom = bumperY;
-        float bumperTop = bumperY + bumperHeight;
-
-        for (int i = 0; i < cliffs.size; i++) {
-            Cliff cliff = cliffs.get(i);
-
-            float cliffLeft = cliff.getX();
-            float cliffRight = cliff.getX() + cliff.getWidth();
-            float cliffBottom = cliff.getY();
-            float cliffTop = cliff.getY() + cliff.getHeight();
-
-            boolean horizontalTooClose = bumperRight + MINIMUM_BUMPER_CLIFF_HORIZONTAL_GAP > cliffLeft && bumperLeft - MINIMUM_BUMPER_CLIFF_HORIZONTAL_GAP < cliffRight;
-
-            boolean verticalTooClose = bumperTop + MINIMUM_BUMPER_CLIFF_VERTICAL_GAP > cliffBottom && bumperBottom - MINIMUM_BUMPER_CLIFF_VERTICAL_GAP < cliffTop;
-
-            if (horizontalTooClose && verticalTooClose) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private float[] buildLanes(float minX, float maxX, int laneCount) {
-        if (maxX < minX) {
-            return new float[0];
-        }
-
-        if (laneCount <= 1) {
-            return new float[]{(minX + maxX) * 0.5f};
-        }
-
-        float span = maxX - minX;
-        if (span < 80f) {
-            return new float[]{minX, (minX + maxX) * 0.5f, maxX};
-        }
-
-        float[] lanes = new float[laneCount];
-        for (int i = 0; i < laneCount; i++) {
-            float t = laneCount == 1 ? 0.5f : (float) i / (float) (laneCount - 1);
-            lanes[i] = minX + span * t;
-        }
-        return lanes;
-    }
-
-    private int chooseLane(int laneCount, int lastLane) {
-        if (laneCount <= 1) {
-            return 0;
-        }
-
-        int lane = MathUtils.random(laneCount - 1);
-        if (lane == lastLane) {
-            lane = (lane + 1 + MathUtils.random(laneCount - 2)) % laneCount;
-        }
-        return lane;
-    }
-
-    private float jitterLane(float laneX, float minX, float maxX, float amount) {
-        return MathUtils.clamp(laneX + MathUtils.random(-amount, amount), minX, maxX);
+    public void removeCoin(Coin coin) {
+        if (coin == null) return;
+        coins.removeValue(coin, true);
+        coin.remove();
     }
 
     public void dispose() {
@@ -233,7 +219,6 @@ public class Chunk {
 
         disposeActor(leftWall);
         disposeActor(rightWall);
-        disposeActor(bottomWall);
 
         for (int i = 0; i < cliffs.size; i++) {
             disposeActor(cliffs.get(i));
@@ -243,15 +228,23 @@ public class Chunk {
             disposeActor(bumpers.get(i));
         }
 
+        for (int i = 0; i < coins.size; i++) {
+            disposeActor(coins.get(i));
+        }
+
         cliffs.clear();
         bumpers.clear();
+        coins.clear();
     }
 
-    private void disposeActor(PhysicsActor actor) {
+    private void disposeActor(BaseActor actor) {
         if (actor == null) return;
 
-        if (actor.getBody() != null) {
-            world.destroyBody(actor.getBody());
+        if (actor instanceof PhysicsActor) {
+            PhysicsActor physicsActor = (PhysicsActor) actor;
+            if (physicsActor.getBody() != null) {
+                world.destroyBody(physicsActor.getBody());
+            }
         }
 
         actor.remove();
@@ -271,6 +264,10 @@ public class Chunk {
 
     public Array<PlatformBumper> getBumpers() {
         return bumpers;
+    }
+
+    public Array<Coin> getCoins() {
+        return coins;
     }
 
     public boolean isDisposed() {

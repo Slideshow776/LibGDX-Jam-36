@@ -258,24 +258,7 @@ public abstract class PhysicsActor extends BaseActor {
         boolean flipX = getScaleX() < 0f;
         boolean flipY = getScaleY() < 0f;
 
-        batch.draw(
-            texture,
-            getX(),
-            getY(),
-            getWidth() * 0.5f,
-            getHeight() * 0.5f,
-            getWidth(),
-            getHeight(),
-            Math.abs(getScaleX()),
-            Math.abs(getScaleY()),
-            getRotation(),
-            0,
-            0,
-            texture.getWidth(),
-            texture.getHeight(),
-            flipX,
-            flipY
-        );
+        batch.draw(texture, getX(), getY(), getWidth() * 0.5f, getHeight() * 0.5f, getWidth(), getHeight(), Math.abs(getScaleX()), Math.abs(getScaleY()), getRotation(), 0, 0, texture.getWidth(), texture.getHeight(), flipX, flipY);
     }
 
     public Material getMaterial() {
