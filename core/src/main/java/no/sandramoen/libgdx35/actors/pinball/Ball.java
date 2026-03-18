@@ -1,6 +1,5 @@
 package no.sandramoen.libgdx35.actors.pinball;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -14,7 +13,7 @@ public class Ball extends PhysicsActor {
         super(world, x, y, material, stage);
 
         this.material = material == null ? Material.METAL : material;
-        this.texture = new Texture(Gdx.files.internal("images/ball.png"));
+        this.texture = material.getBallTexture();
 
         BodyDef def = new BodyDef();
         def.type = BodyDef.BodyType.DynamicBody;
