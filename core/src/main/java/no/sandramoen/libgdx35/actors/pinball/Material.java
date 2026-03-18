@@ -4,25 +4,35 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 
 public enum Material {
-    GUM(0.8f,
-        0.2f,
-        0.6f,
+    GUM(
+        0.9f,
+        0.08f,
+        0.92f,
         "images/included/flipper/gum.png",
         "images/included/ball/gum.png",
         "images/included/wall/gum.png",
-        "images/included/cliff/gum.png"),
+        "images/included/cliff/gum.png"
+    ),
 
-    METAL(5f, 0.2f, 0f,
+    METAL(
+        6.5f,
+        0.35f,
+        0.08f,
         "images/included/flipper/metal.png",
         "images/included/ball/metal.png",
         "images/included/wall/metal.png",
-        "images/included/cliff/gum.png"),
+        "images/included/cliff/gum.png"
+    ),
 
-    GLASS(4f, 0.01f, 0.05f,
+    GLASS(
+        3.2f,
+        0.005f,
+        0.02f,
         "images/included/flipper/glass.png",
         "images/included/ball/glass.png",
         "images/included/wall/glass.png",
-        "images/included/cliff/gum.png");
+        "images/included/cliff/gum.png"
+    );
 
     private final float density;
     private final float friction;
