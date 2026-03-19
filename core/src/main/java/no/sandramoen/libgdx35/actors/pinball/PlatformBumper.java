@@ -22,8 +22,8 @@ public class PlatformBumper extends PhysicsActor {
 
     private float restAngleDeg = -45f;
     private float raisedAngleDeg = 45f;
-    private float motorSpeedDeg = 2000f;
-    private float maxMotorTorque = 9000f;
+    private float motorSpeedDeg = 3000f;
+    private float maxMotorTorque = 3000f;
 
     public PlatformBumper(World world, float x, float y, float width, float height, boolean left, Material material, Stage stage) {
         super(world, x, y, material, stage);

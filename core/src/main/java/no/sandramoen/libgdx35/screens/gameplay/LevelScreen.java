@@ -26,7 +26,6 @@ public class LevelScreen extends BaseScreen {
 
     private float chunkWidth;
     private float chunkHeight;
-    private float wallThickness;
     private float generatedTopY;
     private float failureBottomY;
     private float startBallY;
@@ -38,7 +37,7 @@ public class LevelScreen extends BaseScreen {
     @Override
     public void initialize() {
         chunks = new Array<>();
-        world = new World(new Vector2(0f, -9.8f), true);
+        world = new World(new Vector2(0f, -18f), true);
         world.setContactListener(new PlatformContactListener());
 
         Label.LabelStyle labelStyle = new Label.LabelStyle();
@@ -52,7 +51,6 @@ public class LevelScreen extends BaseScreen {
 
         chunkWidth = Gdx.graphics.getWidth();
         chunkHeight = 2000f;
-        wallThickness = 96f;
 
         generateChunk(0f);
         generateChunk(chunkHeight);
@@ -77,7 +75,7 @@ public class LevelScreen extends BaseScreen {
     }
 
     private void generateChunk(float y) {
-        Chunk chunk = new Chunk(world, mainStage, 0f, y, chunkWidth, chunkHeight, wallThickness);
+        Chunk chunk = new Chunk(world, mainStage, 0f, y, chunkWidth, chunkHeight);
         chunks.add(chunk);
         generatedTopY = Math.max(generatedTopY, chunk.getTopY());
     }
@@ -127,6 +125,10 @@ public class LevelScreen extends BaseScreen {
         OrthographicCamera cam = (OrthographicCamera) mainStage.getCamera();
         cam.position.y += (ball.getY() - cam.position.y) * 0.08f;
         cam.update();
+
+        for (int i = 0; i < chunks.size; i++) {
+            chunks.get(i).extendWallsToCamera(cam, viewport.getWorldWidth());
+        }
     }
 
     private void collectCoins() {
@@ -184,6 +186,10 @@ public class LevelScreen extends BaseScreen {
         OrthographicCamera cam = (OrthographicCamera) mainStage.getCamera();
         cam.position.y = spawnY;
         cam.update();
+
+        for (int i = 0; i < chunks.size; i++) {
+            chunks.get(i).extendWallsToCamera(cam, viewport.getWorldWidth());
+        }
     }
 
     private void launchBallDiagonally() {

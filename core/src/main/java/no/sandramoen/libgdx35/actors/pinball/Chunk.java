@@ -1,5 +1,6 @@
 package no.sandramoen.libgdx35.actors.pinball;
 
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -10,7 +11,7 @@ public class Chunk {
 
     private static final float CLIFF_WALL_INSET = 15f;
     private static final float WALL_CHUNK_OVERLAP = 24f;
-    private static final float WALL_VISIBLE_WIDTH = 20f;
+    private static final float WALL_VISIBLE_WIDTH = 5f;
     private static final float START_Y_OFFSET = 180f;
     private static final float INITIAL_BUMPER_WIDTH = 164f;
     private static final float INITIAL_BUMPER_HEIGHT = 48f;
@@ -27,10 +28,14 @@ public class Chunk {
     private final World world;
     private final Stage stage;
 
+    private final float x;
     private final float y;
     private final float width;
     private final float height;
-    private final float wallThickness;
+    private final float wallThickness = 12;
+
+    private final float leftInnerEdgeX;
+    private final float rightInnerEdgeX;
 
     private final Wall leftWall;
     private final Wall rightWall;
@@ -43,38 +48,41 @@ public class Chunk {
 
     private boolean disposed;
 
-    public Chunk(World world, Stage stage, float x, float y, float width, float height, float wallThickness) {
+    public Chunk(World world, Stage stage, float x, float y, float width, float height) {
         this.world = world;
         this.stage = stage;
+        this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.wallThickness = wallThickness;
 
-        leftWall = new Wall(
-            world,
-            x - wallThickness + WALL_VISIBLE_WIDTH,
-            y - WALL_CHUNK_OVERLAP,
-            wallThickness,
-            height + WALL_CHUNK_OVERLAP * 2f,
-            Material.getRandomMaterial(),
-            stage
-        );
+        leftInnerEdgeX = x + WALL_VISIBLE_WIDTH;
+        rightInnerEdgeX = x + width - WALL_VISIBLE_WIDTH;
 
-        rightWall = new Wall(
-            world,
-            x + width - WALL_VISIBLE_WIDTH,
-            y - WALL_CHUNK_OVERLAP,
-            wallThickness,
-            height + WALL_CHUNK_OVERLAP * 2f,
-            Material.getRandomMaterial(),
-            stage
-        );
+        leftWall = new Wall(world, x - wallThickness + WALL_VISIBLE_WIDTH, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f, Material.getRandomMaterial(), stage);
+        rightWall = new Wall(world, x + width - WALL_VISIBLE_WIDTH, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f, Material.getRandomMaterial(), stage);
         rightWall.setOrigin(rightWall.getWidth() * 0.5f, rightWall.getHeight() * 0.5f);
         rightWall.setScaleX(-1f);
 
         generateBumpersAndCliffs();
         generateCoins();
+    }
+
+    public void extendWallsToCamera(OrthographicCamera camera, float viewportWorldWidth) {
+        float halfViewWidth = viewportWorldWidth * camera.zoom * 0.5f;
+        float cameraLeft = camera.position.x - halfViewWidth;
+        float cameraRight = camera.position.x + halfViewWidth;
+
+        float leftX = Math.min(cameraLeft, leftInnerEdgeX - wallThickness);
+        float leftWidth = leftInnerEdgeX - leftX;
+
+        float rightWidth = Math.max(wallThickness, cameraRight - rightInnerEdgeX);
+        float rightX = rightInnerEdgeX;
+
+        leftWall.setBounds(leftX, y - WALL_CHUNK_OVERLAP, leftWidth, height + WALL_CHUNK_OVERLAP * 2f);
+        rightWall.setBounds(rightX, y - WALL_CHUNK_OVERLAP, rightWidth, height + WALL_CHUNK_OVERLAP * 2f);
+        rightWall.setOrigin(rightWall.getWidth() * 0.5f, rightWall.getHeight() * 0.5f);
+        rightWall.setScaleX(-1f);
     }
 
     private void generateBumpersAndCliffs() {
@@ -88,6 +96,7 @@ public class Chunk {
             float bumperHeight = INITIAL_BUMPER_HEIGHT * MathUtils.random(0.9f, 1.1f);
             float leftPadding = getLeftInnerWallX() + INITIAL_CLIFF_WIDTH;
             float rightPadding = getRightInnerWallX() - INITIAL_CLIFF_WIDTH - INITIAL_BUMPER_WIDTH;
+            float degreeOffset = MathUtils.random(-10f, 10f);
             float minReduction = -16;
             float maxIncrease = 32;
 
@@ -115,12 +124,16 @@ public class Chunk {
                     continue;
 
                 case LEFT_CLIFF:
-                    cliffs.add(new Cliff(world, getLeftInnerWallX() - CLIFF_WALL_INSET - 30f, currentY, cliffWidth, cliffHeight, Orientation.RIGHT, Material.getRandomMaterial(), stage));
+                    Cliff cliff = new Cliff(world, getLeftInnerWallX() - CLIFF_WALL_INSET - 30f, currentY, cliffWidth, cliffHeight, Orientation.RIGHT, Material.getRandomMaterial(), stage);
+                    cliff.setRotation(cliff.getRotation() + degreeOffset);
+                    cliffs.add(cliff);
                     currentY += cliffHeight * 2f;
                     break;
 
                 case RIGHT_CLIFF:
-                    cliffs.add(new Cliff(world, getRightInnerWallX() - cliffWidth + CLIFF_WALL_INSET + 30f, currentY, cliffWidth, cliffHeight, Orientation.LEFT, Material.getRandomMaterial(), stage));
+                    cliff = new Cliff(world, getRightInnerWallX() - cliffWidth + CLIFF_WALL_INSET + 30f, currentY, cliffWidth, cliffHeight, Orientation.LEFT, Material.getRandomMaterial(), stage);
+                    cliff.setRotation(cliff.getRotation() + degreeOffset);
+                    cliffs.add(cliff);
                     currentY += cliffHeight * 2f;
                     break;
             }
@@ -219,11 +232,11 @@ public class Chunk {
     }
 
     private float getLeftInnerWallX() {
-        return leftWall.getX() + leftWall.getWidth();
+        return leftInnerEdgeX;
     }
 
     private float getRightInnerWallX() {
-        return rightWall.getX();
+        return rightInnerEdgeX;
     }
 
     public void removeCoin(Coin coin) {
