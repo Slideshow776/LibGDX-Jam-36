@@ -20,10 +20,10 @@ public class PlatformBumper extends PhysicsActor {
 
     private boolean raised;
 
-    private float restAngleDeg = -25f;
-    private float raisedAngleDeg = 25f;
-    private float motorSpeedDeg = 1200f;
-    private float maxMotorTorque = 3000f;
+    private float restAngleDeg = -45f;
+    private float raisedAngleDeg = 45f;
+    private float motorSpeedDeg = 2000f;
+    private float maxMotorTorque = 9000f;
 
     public PlatformBumper(World world, float x, float y, float width, float height, boolean left, Material material, Stage stage) {
         super(world, x, y, material, stage);
@@ -33,8 +33,8 @@ public class PlatformBumper extends PhysicsActor {
         this.texture = material.getPlatformTexture();
 
         if (!left) {
-            restAngleDeg = 25f;
-            raisedAngleDeg = -25f;
+            restAngleDeg = 45f;
+            raisedAngleDeg = -45f;
         }
 
         super.setBounds(x, y, width, height);
@@ -186,13 +186,6 @@ public class PlatformBumper extends PhysicsActor {
 
     @Override
     protected void updateBodyTransform() {
-    }
-
-    public boolean shouldDisableContact(Ball ball, PlatformBumper bumper) {
-        float ballY = ball.getBody().getPosition().y;
-        float bumperY = bumper.getBody().getPosition().y;
-        float velocityY = ball.getBody().getLinearVelocity().y;
-        return velocityY > 0f && ballY < bumperY;
     }
 
     @Override

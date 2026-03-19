@@ -1,13 +1,14 @@
 package no.sandramoen.libgdx35.actors.pinball;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 
 public class Ball extends PhysicsActor {
 
-    private final Texture texture;
-    private final Body body;
+    private Texture texture;
+    private Body body;
 
     public Ball(World world, float x, float y, float width, float height, Material material, Stage stage) {
         super(world, x, y, material, stage);
@@ -27,6 +28,17 @@ public class Ball extends PhysicsActor {
         super.setBounds(x, y, width, height);
         updateBodyShape();
         updateBodyTransform();
+    }
+
+    @Override
+    public void draw(Batch batch, float parentAlpha) {
+        batch.draw(this.getTexture(), getX(), getY(), getWidth(), getHeight());
+    }
+
+    @Override
+    public void setMaterial(Material material) {
+        this.material = material;
+        this.texture = material.getBallTexture();
     }
 
     @Override

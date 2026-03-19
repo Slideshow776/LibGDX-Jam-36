@@ -16,13 +16,13 @@ public enum Material {
         "images/included/flipper/metal.png",
         "images/included/ball/metal.png",
         "images/included/wall/metal.png",
-        "images/included/cliff/gum.png"),
+        "images/included/cliff/metal.png"),
 
     GLASS(4f, 0.01f, 0.05f,
         "images/included/flipper/glass.png",
         "images/included/ball/glass.png",
         "images/included/wall/glass.png",
-        "images/included/cliff/gum.png");
+        "images/included/cliff/glass.png");
 
     private final float density;
     private final float friction;

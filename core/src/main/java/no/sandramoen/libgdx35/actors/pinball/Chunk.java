@@ -10,10 +10,11 @@ public class Chunk {
 
     private static final float CLIFF_WALL_INSET = 15f;
     private static final float WALL_CHUNK_OVERLAP = 24f;
+    private static final float WALL_VISIBLE_WIDTH = 20f;
     private static final float START_Y_OFFSET = 180f;
-    private static final float INITIAL_BUMPER_WIDTH = 280f;
-    private static final float INITIAL_BUMPER_HEIGHT = 64f;
-    private static final float INITIAL_CLIFF_WIDTH = 168f;
+    private static final float INITIAL_BUMPER_WIDTH = 164f;
+    private static final float INITIAL_BUMPER_HEIGHT = 48f;
+    private static final float INITIAL_CLIFF_WIDTH = 96f;
     private static final float INITIAL_CLIFF_HEIGHT = 256f;
 
     private static final float COIN_WIDTH = 48f;
@@ -50,8 +51,25 @@ public class Chunk {
         this.height = height;
         this.wallThickness = wallThickness;
 
-        leftWall = new Wall(world, x - CLIFF_WALL_INSET, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f, Material.getRandomMaterial(), stage);
-        rightWall = new Wall(world, x + width - wallThickness + CLIFF_WALL_INSET, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f, Material.getRandomMaterial(), stage);
+        leftWall = new Wall(
+            world,
+            x - wallThickness + WALL_VISIBLE_WIDTH,
+            y - WALL_CHUNK_OVERLAP,
+            wallThickness,
+            height + WALL_CHUNK_OVERLAP * 2f,
+            Material.getRandomMaterial(),
+            stage
+        );
+
+        rightWall = new Wall(
+            world,
+            x + width - WALL_VISIBLE_WIDTH,
+            y - WALL_CHUNK_OVERLAP,
+            wallThickness,
+            height + WALL_CHUNK_OVERLAP * 2f,
+            Material.getRandomMaterial(),
+            stage
+        );
         rightWall.setOrigin(rightWall.getWidth() * 0.5f, rightWall.getHeight() * 0.5f);
         rightWall.setScaleX(-1f);
 
@@ -66,30 +84,31 @@ public class Chunk {
         for (int i = 0; i < rows; i++) {
             float cliffWidth = INITIAL_CLIFF_WIDTH * MathUtils.random(1.0f, 1.5f);
             float cliffHeight = INITIAL_CLIFF_HEIGHT * MathUtils.random(1.0f, 1.5f);
-            float insideWidth = (width * .5f) - (wallThickness * 2f) - (cliffWidth * 2f);
             float bumperWidth = INITIAL_BUMPER_WIDTH * MathUtils.random(0.9f, 1.1f);
             float bumperHeight = INITIAL_BUMPER_HEIGHT * MathUtils.random(0.9f, 1.1f);
-            float leftPadding = getLeftInnerWallX() + cliffWidth;
-            float rightPadding = getRightInnerWallX() - cliffWidth - bumperWidth;
+            float leftPadding = getLeftInnerWallX() + INITIAL_CLIFF_WIDTH;
+            float rightPadding = getRightInnerWallX() - INITIAL_CLIFF_WIDTH - INITIAL_BUMPER_WIDTH;
+            float minReduction = -16;
+            float maxIncrease = 32;
 
             switch (state) {
                 case LEFT_BUMPER:
-                    float bumperX = leftPadding + MathUtils.random(insideWidth);
+                    float bumperX = leftPadding + MathUtils.random(minReduction, maxIncrease);
                     bumpers.add(new PlatformBumper(world, bumperX, currentY, bumperWidth, bumperHeight, true, Material.getRandomMaterial(), stage));
                     currentY += bumperHeight * 2f;
                     break;
 
                 case RIGHT_BUMPER:
-                    bumperX = rightPadding - MathUtils.random(insideWidth);
+                    bumperX = rightPadding - MathUtils.random(minReduction, maxIncrease);
                     bumpers.add(new PlatformBumper(world, bumperX, currentY, bumperWidth, bumperHeight, false, Material.getRandomMaterial(), stage));
                     currentY += bumperHeight * 2f;
                     break;
 
                 case DOUBLE_BUMPER:
-                    bumperX = leftPadding + MathUtils.random(insideWidth);
+                    bumperX = leftPadding + MathUtils.random(minReduction, maxIncrease);
                     bumpers.add(new PlatformBumper(world, bumperX, currentY, bumperWidth, bumperHeight, true, Material.getRandomMaterial(), stage));
 
-                    bumperX = rightPadding - MathUtils.random(insideWidth);
+                    bumperX = rightPadding - MathUtils.random(minReduction, maxIncrease);
                     bumpers.add(new PlatformBumper(world, bumperX, currentY, bumperWidth, bumperHeight, false, Material.getRandomMaterial(), stage));
                     currentY += bumperHeight * 2f;
                     state = MathUtils.randomBoolean() ? PlacementState.LEFT_CLIFF : PlacementState.RIGHT_CLIFF;

@@ -275,26 +275,6 @@ public abstract class PhysicsActor extends BaseActor {
         }
     }
 
-    private static ShaderProgram getMaterialShader() {
-        if (materialShader != null) {
-            return materialShader;
-        }
-
-        ShaderProgram.pedantic = false;
-
-        String vertex = "" + "attribute vec4 a_position;\n" + "attribute vec4 a_color;\n" + "attribute vec2 a_texCoord0;\n" + "uniform mat4 u_projTrans;\n" + "varying vec4 v_color;\n" + "varying vec2 v_texCoords;\n" + "void main() {\n" + "    v_color = a_color;\n" + "    v_texCoords = a_texCoord0;\n" + "    gl_Position = u_projTrans * a_position;\n" + "}\n";
-
-        String fragment = "" + "#ifdef GL_ES\n" + "precision mediump float;\n" + "#endif\n" + "varying vec4 v_color;\n" + "varying vec2 v_texCoords;\n" + "uniform sampler2D u_texture;\n" + "uniform sampler2D u_materialTexture;\n" + "uniform vec2 u_materialScale;\n" + "uniform vec2 u_materialOffset;\n" + "uniform float u_materialAlpha;\n" + "void main() {\n" + "    vec4 shape = texture2D(u_texture, v_texCoords);\n" + "    vec2 materialUv = v_texCoords * u_materialScale + u_materialOffset;\n" + "    vec4 material = texture2D(u_materialTexture, materialUv);\n" + "    vec4 result = vec4(material.rgb, shape.a * material.a * u_materialAlpha);\n" + "    gl_FragColor = result * v_color;\n" + "}\n";
-
-        materialShader = new ShaderProgram(vertex, fragment);
-
-        if (!materialShader.isCompiled()) {
-            throw new IllegalStateException(materialShader.getLog());
-        }
-
-        return materialShader;
-    }
-
     protected abstract Texture getTexture();
 
     protected abstract void updateBodyShape();

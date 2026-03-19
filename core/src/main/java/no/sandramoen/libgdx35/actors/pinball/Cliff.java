@@ -24,6 +24,12 @@ public class Cliff extends PhysicsActor {
         bodyDef.position.set(toMeters(x + width * 0.5f), toMeters(y + height * 0.5f));
         bodyDef.angle = this.orientation.getRotationDeg() * MathUtils.degreesToRadians;
 
+        switch (orientation) {
+            case LEFT:
+                this.setScaleY(-1);
+                break;
+        }
+
         body = world.createBody(bodyDef);
         body.setUserData(this);
 
@@ -118,29 +124,5 @@ public class Cliff extends PhysicsActor {
     @Override
     public Body getBody() {
         return body;
-    }
-
-    public Orientation getOrientation() {
-        return orientation;
-    }
-
-    public void setOrientation(Orientation orientation) {
-        if (orientation == null || this.orientation == orientation) return;
-
-        this.orientation = orientation;
-        super.setRotation(orientation.getRotationDeg());
-        updateBodyTransform();
-    }
-
-    private String getTexturePath(Material material) {
-        switch (material) {
-            case METAL:
-                return "images/cliff_metal.png";
-            case GLASS:
-                return "images/cliff_glass.png";
-            case GUM:
-            default:
-                return "images/cliff_gum.png";
-        }
     }
 }

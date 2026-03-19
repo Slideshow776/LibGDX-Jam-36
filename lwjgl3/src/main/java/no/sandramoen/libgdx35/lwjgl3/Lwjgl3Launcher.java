@@ -41,7 +41,7 @@ public class Lwjgl3Launcher {
         if (isFullscreen)
             configuration.setFullscreenMode(Lwjgl3ApplicationConfiguration.getDisplayMode());
         else
-            setWindowedMode(.25f, configuration);
+           configuration.setWindowedMode(540, 960);
         return configuration;
     }
 
