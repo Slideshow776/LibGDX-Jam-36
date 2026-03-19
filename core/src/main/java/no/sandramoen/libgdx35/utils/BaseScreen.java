@@ -5,11 +5,13 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public abstract class BaseScreen implements Screen, InputProcessor {
@@ -19,9 +21,15 @@ public abstract class BaseScreen implements Screen, InputProcessor {
     protected Table uiTable;
     protected ShapeRenderer shape_renderer;
     private boolean pause;
+    protected FitViewport viewport;
+    protected OrthographicCamera camera;
 
     public BaseScreen() {
-        mainStage = new Stage(new ScreenViewport());
+        viewport = new FitViewport(540, 960);
+        camera = new OrthographicCamera();
+        viewport.setCamera(camera);
+        mainStage = new Stage(viewport);
+        camera.zoom = 1.3f;
 
         uiTable = new Table();
         uiTable.setFillParent(true);
@@ -131,6 +139,7 @@ public abstract class BaseScreen implements Screen, InputProcessor {
 
     @Override
     public boolean scrolled(float amountX, float amountY) {
+        camera.zoom = MathUtils.clamp(camera.zoom + amountY * 0.05f, 0.5f, 3f);
         return false;
     }
 
