@@ -24,10 +24,8 @@ public class Cliff extends PhysicsActor {
         bodyDef.position.set(toMeters(x + width * 0.5f), toMeters(y + height * 0.5f));
         bodyDef.angle = this.orientation.getRotationDeg() * MathUtils.degreesToRadians;
 
-        switch (orientation) {
-            case LEFT:
-                this.setScaleY(-1);
-                break;
+        if (orientation == Orientation.LEFT) {
+            this.setScaleY(-1);
         }
 
         body = world.createBody(bodyDef);
