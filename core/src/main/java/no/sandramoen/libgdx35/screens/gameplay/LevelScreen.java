@@ -66,6 +66,7 @@ public class LevelScreen extends BaseScreen {
         launchBallDiagonally();
         updateStatsLabel();
 
+        this.camera.zoom = 1.7f;
         mainStage.getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
     }
 
