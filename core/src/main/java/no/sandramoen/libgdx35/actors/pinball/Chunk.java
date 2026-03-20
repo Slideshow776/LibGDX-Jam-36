@@ -112,7 +112,7 @@ public class Chunk {
             float rightPadding = getRightInnerWallX() - INITIAL_CLIFF_WIDTH - INITIAL_BUMPER_WIDTH;
             float degreeOffset = MathUtils.random(-10f, 10f);
             float minReduction = -(INITIAL_BUMPER_WIDTH * 0.25f);
-            float maxIncrease = INITIAL_BUMPER_WIDTH * 0.5f;
+            float maxIncrease = INITIAL_BUMPER_WIDTH * 0.45f;
 
             switch (state) {
                 case LEFT_BUMPER:
