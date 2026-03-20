@@ -13,8 +13,8 @@ public class Chunk {
     private static final float WALL_CHUNK_OVERLAP = 24f;
     private static final float WALL_VISIBLE_WIDTH = 5f;
     private static final float START_Y_OFFSET = 180f;
-    private static final float INITIAL_BUMPER_WIDTH = 304f;
-    private static final float INITIAL_BUMPER_HEIGHT = 96f;
+    private static final float INITIAL_BUMPER_WIDTH = 212f;
+    private static final float INITIAL_BUMPER_HEIGHT = 64f;
     private static final float INITIAL_CLIFF_WIDTH = 128f;
     private static final float INITIAL_CLIFF_HEIGHT = 304f;
 
@@ -32,10 +32,7 @@ public class Chunk {
     private final float y;
     private final float width;
     private final float height;
-    private final float wallThickness = 12;
-
-    private final float leftInnerEdgeX;
-    private final float rightInnerEdgeX;
+    private final float wallThickness = 12f;
 
     private final Wall leftWall;
     private final Wall rightWall;
@@ -56,9 +53,6 @@ public class Chunk {
         this.width = width;
         this.height = height;
 
-        leftInnerEdgeX = x + WALL_VISIBLE_WIDTH;
-        rightInnerEdgeX = x + width - WALL_VISIBLE_WIDTH;
-
         leftWall = new Wall(world, x - wallThickness + WALL_VISIBLE_WIDTH, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f, Material.getRandomMaterial(), stage);
         rightWall = new Wall(world, x + width - WALL_VISIBLE_WIDTH, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f, Material.getRandomMaterial(), stage);
         rightWall.setOrigin(rightWall.getWidth() * 0.5f, rightWall.getHeight() * 0.5f);
@@ -73,30 +67,25 @@ public class Chunk {
         float cameraLeft = camera.position.x - halfViewWidth;
         float cameraRight = camera.position.x + halfViewWidth;
 
-        float leftX = Math.min(cameraLeft, leftInnerEdgeX - wallThickness);
-        float leftWidth = leftInnerEdgeX - leftX;
+        float leftX = cameraLeft - wallThickness + WALL_VISIBLE_WIDTH;
+        float rightX = cameraRight - WALL_VISIBLE_WIDTH;
 
-        float rightWidth = Math.max(wallThickness, cameraRight - rightInnerEdgeX);
-        float rightX = rightInnerEdgeX;
-
-        leftWall.setBounds(leftX, y - WALL_CHUNK_OVERLAP, leftWidth, height + WALL_CHUNK_OVERLAP * 2f);
-        rightWall.setBounds(rightX, y - WALL_CHUNK_OVERLAP, rightWidth, height + WALL_CHUNK_OVERLAP * 2f);
+        leftWall.setBounds(leftX, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f);
+        rightWall.setBounds(rightX, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f);
         rightWall.setOrigin(rightWall.getWidth() * 0.5f, rightWall.getHeight() * 0.5f);
         rightWall.setScaleX(-1f);
 
         float scaledInset = CLIFF_WALL_INSET * camera.zoom;
-        float extraOffset = 30f * camera.zoom;
+        float scaledOffset = 30f * camera.zoom;
 
         for (int i = 0; i < cliffs.size; i++) {
             Cliff cliff = cliffs.get(i);
-
             if (cliff.getOrientation() == Orientation.RIGHT) {
-                cliff.setX(getLeftInnerWallX() - scaledInset - extraOffset);
+                cliff.setX(getLeftInnerWallX() - scaledInset - scaledOffset);
             } else {
-                cliff.setX(getRightInnerWallX() - cliff.getWidth() + scaledInset + extraOffset);
+                cliff.setX(getRightInnerWallX() - cliff.getWidth() + scaledInset + scaledOffset);
             }
         }
-
     }
 
     private void generateBumpersAndCliffs() {
@@ -246,11 +235,11 @@ public class Chunk {
     }
 
     private float getLeftInnerWallX() {
-        return leftInnerEdgeX;
+        return leftWall.getX() + leftWall.getWidth();
     }
 
     private float getRightInnerWallX() {
-        return rightInnerEdgeX;
+        return rightWall.getX();
     }
 
     public void removeCoin(Coin coin) {

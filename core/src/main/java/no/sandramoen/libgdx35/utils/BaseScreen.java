@@ -6,6 +6,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -23,8 +24,10 @@ public abstract class BaseScreen implements Screen, InputProcessor {
     private boolean pause;
     protected FitViewport viewport;
     protected OrthographicCamera camera;
+    protected SpriteBatch batch;
 
     public BaseScreen() {
+        batch = new SpriteBatch();
         viewport = new FitViewport(960, 960);
         camera = new OrthographicCamera();
         viewport.setCamera(camera);

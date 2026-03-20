@@ -58,7 +58,7 @@ public class LevelScreen extends BaseScreen {
 
         failureBottomY = chunks.first().getBottomY();
 
-        ball = new Ball(world, chunkWidth * .5f, 1000f, 96, 96, Material.GUM, mainStage);
+        ball = new Ball(world, chunkWidth * .5f, 1000f, 64f, 64f, Material.GUM, mainStage);
         startBallY = ball.getY();
         highestBallY = startBallY;
         coinCount = 0;
@@ -66,7 +66,7 @@ public class LevelScreen extends BaseScreen {
         launchBallDiagonally();
         updateStatsLabel();
 
-        this.camera.zoom = 1.7f;
+        this.camera.zoom = 1.0f;
         mainStage.getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
     }
 
