@@ -25,7 +25,7 @@ public abstract class BaseScreen implements Screen, InputProcessor {
     protected OrthographicCamera camera;
 
     public BaseScreen() {
-        viewport = new FitViewport(540, 960);
+        viewport = new FitViewport(960, 960);
         camera = new OrthographicCamera();
         viewport.setCamera(camera);
         mainStage = new Stage(viewport);

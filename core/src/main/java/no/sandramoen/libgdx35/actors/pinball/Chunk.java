@@ -9,14 +9,14 @@ import no.sandramoen.libgdx35.utils.BaseActor;
 
 public class Chunk {
 
-    private static final float CLIFF_WALL_INSET = 15f;
+    private static final float CLIFF_WALL_INSET = 17f;
     private static final float WALL_CHUNK_OVERLAP = 24f;
     private static final float WALL_VISIBLE_WIDTH = 5f;
     private static final float START_Y_OFFSET = 180f;
-    private static final float INITIAL_BUMPER_WIDTH = 164f;
-    private static final float INITIAL_BUMPER_HEIGHT = 48f;
-    private static final float INITIAL_CLIFF_WIDTH = 96f;
-    private static final float INITIAL_CLIFF_HEIGHT = 256f;
+    private static final float INITIAL_BUMPER_WIDTH = 304f;
+    private static final float INITIAL_BUMPER_HEIGHT = 96f;
+    private static final float INITIAL_CLIFF_WIDTH = 128f;
+    private static final float INITIAL_CLIFF_HEIGHT = 304f;
 
     private static final float COIN_WIDTH = 48f;
     private static final float COIN_HEIGHT = 48f;
@@ -83,6 +83,20 @@ public class Chunk {
         rightWall.setBounds(rightX, y - WALL_CHUNK_OVERLAP, rightWidth, height + WALL_CHUNK_OVERLAP * 2f);
         rightWall.setOrigin(rightWall.getWidth() * 0.5f, rightWall.getHeight() * 0.5f);
         rightWall.setScaleX(-1f);
+
+        float scaledInset = CLIFF_WALL_INSET * camera.zoom;
+        float extraOffset = 30f * camera.zoom;
+
+        for (int i = 0; i < cliffs.size; i++) {
+            Cliff cliff = cliffs.get(i);
+
+            if (cliff.getOrientation() == Orientation.RIGHT) {
+                cliff.setX(getLeftInnerWallX() - scaledInset - extraOffset);
+            } else {
+                cliff.setX(getRightInnerWallX() - cliff.getWidth() + scaledInset + extraOffset);
+            }
+        }
+
     }
 
     private void generateBumpersAndCliffs() {
@@ -97,8 +111,8 @@ public class Chunk {
             float leftPadding = getLeftInnerWallX() + INITIAL_CLIFF_WIDTH;
             float rightPadding = getRightInnerWallX() - INITIAL_CLIFF_WIDTH - INITIAL_BUMPER_WIDTH;
             float degreeOffset = MathUtils.random(-10f, 10f);
-            float minReduction = -16;
-            float maxIncrease = 32;
+            float minReduction = -(INITIAL_BUMPER_WIDTH * 0.25f);
+            float maxIncrease = INITIAL_BUMPER_WIDTH * 0.5f;
 
             switch (state) {
                 case LEFT_BUMPER:

@@ -37,7 +37,7 @@ public class LevelScreen extends BaseScreen {
     @Override
     public void initialize() {
         chunks = new Array<>();
-        world = new World(new Vector2(0f, -18f), true);
+        world = new World(new Vector2(0f, -24f), true);
         world.setContactListener(new PlatformContactListener());
 
         Label.LabelStyle labelStyle = new Label.LabelStyle();
@@ -58,7 +58,7 @@ public class LevelScreen extends BaseScreen {
 
         failureBottomY = chunks.first().getBottomY();
 
-        ball = new Ball(world, chunkWidth * .5f, 1000f, 64f, 64f, Material.GUM, mainStage);
+        ball = new Ball(world, chunkWidth * .5f, 1000f, 96, 96, Material.GUM, mainStage);
         startBallY = ball.getY();
         highestBallY = startBallY;
         coinCount = 0;

@@ -123,4 +123,8 @@ public class Cliff extends PhysicsActor {
     public Body getBody() {
         return body;
     }
+
+    public Orientation getOrientation() {
+        return orientation;
+    }
 }
