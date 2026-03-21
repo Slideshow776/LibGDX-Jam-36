@@ -20,8 +20,8 @@ public abstract class BaseGame extends Game implements AssetErrorListener {
     public static boolean isCustomShadersEnabled = true;
     public static boolean isHideUI = false;
     public static float voiceVolume = 1f;
-    public static float soundVolume = .5f;
-    public static float musicVolume = .1f;
+    public static float soundVolume = 1.0f;
+    public static float musicVolume = .5f;
     public static float vibrationStrength = 1f;
     public static final float UNIT_SCALE = 1 / 16f;
     public static final float WORLD_WIDTH = 14f;

@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.Array;
 import com.github.tommyettinger.textra.TextraLabel;
 import no.sandramoen.libgdx35.actors.pinball.*;
 import no.sandramoen.libgdx35.utils.AssetLoader;
+import no.sandramoen.libgdx35.utils.BaseGame;
 import no.sandramoen.libgdx35.utils.BaseScreen;
 
 public class LevelScreen extends BaseScreen {
@@ -80,6 +81,17 @@ public class LevelScreen extends BaseScreen {
         this.camera.zoom = 1.8f;
         mainStage.getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
 
+        // music
+        AssetLoader.levelMusic.setLooping(true);
+        AssetLoader.levelMusic.setVolume(0f);
+        AssetLoader.levelMusic.play();
+
+        AssetLoader.introMusic.setVolume(BaseGame.musicVolume);
+        AssetLoader.introMusic.play();
+
+        AssetLoader.endMusic.setVolume(BaseGame.musicVolume);
+
+        // backgrounds
         updateBackgrounds();
     }
 
@@ -187,6 +199,14 @@ public class LevelScreen extends BaseScreen {
         for (int i = 0; i < chunks.size; i++) {
             chunks.get(i).extendWallsToCamera(cam, viewport.getWorldWidth());
         }
+
+        if (
+                !AssetLoader.introMusic.isPlaying() &&
+                !AssetLoader.endMusic.isPlaying() &&
+                AssetLoader.levelMusic.getVolume() == 0
+        ) {
+            AssetLoader.levelMusic.setVolume(BaseGame.musicVolume);
+        }
     }
 
     private void updateBackgrounds() {
@@ -223,6 +243,7 @@ public class LevelScreen extends BaseScreen {
                 if (ballBounds.overlaps(coinBounds)) {
                     chunk.removeCoin(coin);
                     coinCount++;
+                    AssetLoader.coin_sound.play(BaseGame.soundVolume, MathUtils.random(0.9f, 1.1f), 0f);
                 }
             }
         }
@@ -260,6 +281,10 @@ public class LevelScreen extends BaseScreen {
 
         launchBallDiagonally();
         updateStatsLabel();
+
+        AssetLoader.introMusic.stop();
+        AssetLoader.levelMusic.setVolume(0f);
+        AssetLoader.endMusic.play();
 
         OrthographicCamera cam = (OrthographicCamera) mainStage.getCamera();
         cam.position.y = spawnY;
