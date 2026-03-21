@@ -99,6 +99,8 @@ public class Chunk {
             coin.setSize(newWidth, newHeight);
             coin.setPosition(centerX - newWidth * 0.5f, centerY - newHeight * 0.5f);
         }
+
+        printCoinAverages();
     }
 
     public void adjustBumperSizes(float amount) {
@@ -111,6 +113,8 @@ public class Chunk {
             bumper.setSize(newWidth, newHeight);
             bumper.setPosition(centerX - newWidth * 0.5f, centerY - newHeight * 0.5f);
         }
+
+        printBumperAverages();
     }
 
     public void adjustCliffSizes(float amount) {
@@ -123,6 +127,71 @@ public class Chunk {
             cliff.setSize(newWidth, newHeight);
             cliff.setPosition(centerX - newWidth * 0.5f, centerY - newHeight * 0.5f);
         }
+
+        printCliffAverages();
+    }
+
+    private void printCoinAverages() {
+        if (coins.size == 0) {
+            System.out.println("Coins -> avg width: 0, avg height: 0");
+            return;
+        }
+
+        float totalWidth = 0f;
+        float totalHeight = 0f;
+
+        for (int i = 0; i < coins.size; i++) {
+            Coin coin = coins.get(i);
+            totalWidth += coin.getWidth();
+            totalHeight += coin.getHeight();
+        }
+
+        System.out.println(
+            "Coins -> avg width: " + (totalWidth / coins.size) +
+                ", avg height: " + (totalHeight / coins.size)
+        );
+    }
+
+    private void printBumperAverages() {
+        if (bumpers.size == 0) {
+            System.out.println("Bumpers -> avg width: 0, avg height: 0");
+            return;
+        }
+
+        float totalWidth = 0f;
+        float totalHeight = 0f;
+
+        for (int i = 0; i < bumpers.size; i++) {
+            PlatformBumper bumper = bumpers.get(i);
+            totalWidth += bumper.getWidth();
+            totalHeight += bumper.getHeight();
+        }
+
+        System.out.println(
+            "Bumpers -> avg width: " + (totalWidth / bumpers.size) +
+                ", avg height: " + (totalHeight / bumpers.size)
+        );
+    }
+
+    private void printCliffAverages() {
+        if (cliffs.size == 0) {
+            System.out.println("Cliffs -> avg width: 0, avg height: 0");
+            return;
+        }
+
+        float totalWidth = 0f;
+        float totalHeight = 0f;
+
+        for (int i = 0; i < cliffs.size; i++) {
+            Cliff cliff = cliffs.get(i);
+            totalWidth += cliff.getWidth();
+            totalHeight += cliff.getHeight();
+        }
+
+        System.out.println(
+            "Cliffs -> avg width: " + (totalWidth / cliffs.size) +
+                ", avg height: " + (totalHeight / cliffs.size)
+        );
     }
 
     private void generateBumpersAndCliffs() {
