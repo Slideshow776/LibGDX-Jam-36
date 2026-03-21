@@ -26,13 +26,6 @@ public class AssetLoader implements AssetErrorListener {
     public static String backgroundShader;
 
     public static Sound new_letters_sound;
-    public static Sound move_sound;
-    public static Sound error_sound;
-    public static Sound game_over_sound;
-    public static Sound game_start_sound;
-    public static Sound key_sound;
-    public static Sound locked_sound;
-    public static Sound door_open_sound;
 
     public static Array<Music> music;
     //public static Music levelMusic;
@@ -129,9 +122,9 @@ public class AssetLoader implements AssetErrorListener {
         float scale = Gdx.graphics.getWidth() * .05f; // magic number ensures scale ~= 1, based on screen width
         scale *= 1.01f; // make x percent bigger, bigger = more fuzzy
 
-        mySkin.get("Alegreya20white", Font.class).scale(scale);
-        mySkin.get("Alegreya40white", Font.class).scale(scale);
-        mySkin.get("Alegreya59white", Font.class).scale(scale);
+        mySkin.get("Fredoka20white", Font.class).scale(scale);
+        mySkin.get("Fredoka40white", Font.class).scale(scale);
+        mySkin.get("Fredoka59white", Font.class).scale(scale);
     }
 
     private static void loadTiledMap() {

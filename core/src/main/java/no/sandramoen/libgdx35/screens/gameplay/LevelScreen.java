@@ -9,9 +9,15 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
+import com.github.tommyettinger.textra.Styles;
+import com.github.tommyettinger.textra.TextraLabel;
+
 import no.sandramoen.libgdx35.actors.pinball.*;
+import no.sandramoen.libgdx35.utils.AssetLoader;
 import no.sandramoen.libgdx35.utils.BaseScreen;
 
 public class LevelScreen extends BaseScreen {
@@ -31,7 +37,7 @@ public class LevelScreen extends BaseScreen {
     private float startBallY;
     private float highestBallY;
 
-    private Label statsLabel;
+    private TextraLabel statsLabel;
     private int coinCount;
 
     @Override
@@ -40,14 +46,9 @@ public class LevelScreen extends BaseScreen {
         world = new World(new Vector2(0f, -24f), true);
         world.setContactListener(new PlatformContactListener());
 
-        Label.LabelStyle labelStyle = new Label.LabelStyle();
-        labelStyle.font = new BitmapFont();
-        labelStyle.font.getData().scale(2f);
-        labelStyle.fontColor = Color.WHITE;
-
-        statsLabel = new Label("", labelStyle);
+        statsLabel = new TextraLabel("0", AssetLoader.getLabelStyle("Fredoka20white"));
         statsLabel.setPosition(20f, Gdx.graphics.getHeight() - 70f);
-        uiStage.addActor(statsLabel);
+        uiTable.add(statsLabel).expand().center().top();
 
         chunkWidth = Gdx.graphics.getWidth();
         chunkHeight = 2000f;

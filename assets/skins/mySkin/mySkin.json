@@ -1,39 +1,21 @@
 {
 com.badlogic.gdx.graphics.g2d.BitmapFont: {
-	Alegreya20white: {
-		file: Alegreya20white.fnt
+	Fredoka20white: {
+		file: Fredoka20white.fnt
 		scaledSize: 1
 		markupEnabled: false
 		flip: false
 	}
-	Alegreya40white: {
-		file: Alegreya40white.fnt
+	Fredoka40white: {
+		file: Fredoka40white.fnt
 		scaledSize: 1
 		markupEnabled: false
 		flip: false
 	}
-	Alegreya59white: {
-		file: Alegreya59white.fnt
+	Fredoka59white: {
+		file: Fredoka59white.fnt
 		scaledSize: 1
 		markupEnabled: false
-		flip: false
-	}
-	Play-Bold20white: {
-		file: Play-Bold20white.fnt
-		scaledSize: 1
-		markupEnabled: true
-		flip: false
-	}
-	Play-Bold40white: {
-		file: Play-Bold40white.fnt
-		scaledSize: 1
-		markupEnabled: true
-		flip: false
-	}
-	Play-Bold59white: {
-		file: Play-Bold59white.fnt
-		scaledSize: 1
-		markupEnabled: true
 		flip: false
 	}
 }
@@ -118,14 +100,6 @@ com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
 		checkedOver: round-light-gray
 	}
 }
-com.badlogic.gdx.scenes.scene2d.ui.CheckBox$CheckBoxStyle: {
-	default: {
-		checkboxOn: checkbox-on
-		checkboxOff: checkbox
-		font: Play-Bold40white
-		fontColor: black
-	}
-}
 com.badlogic.gdx.scenes.scene2d.ui.ImageButton$ImageButtonStyle: {
 	default: {
 		up: round-gray
@@ -140,26 +114,10 @@ com.badlogic.gdx.scenes.scene2d.ui.ImageButton$ImageButtonStyle: {
 		checkedOver: round-light-gray
 	}
 }
-com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton$ImageTextButtonStyle: {
-	default: {
-		font: Play-Bold40white
-		up: round-gray
-		down: round-dark-gray
-		over: round-light-gray
-	}
-}
 com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	default: {
-		font: Alegreya20white
+		font: Fredoka20white
 		fontColor: black
-	}
-}
-com.badlogic.gdx.scenes.scene2d.ui.List$ListStyle: {
-	default: {
-		font: Play-Bold40white
-		fontColorSelected: white
-		fontColorUnselected: black
-		selection: selection
 	}
 }
 com.badlogic.gdx.scenes.scene2d.ui.ProgressBar$ProgressBarStyle: {
@@ -181,14 +139,6 @@ com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
 		vScrollKnob: round-gray-small
 	}
 }
-com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle: {
-	default: {
-		font: Play-Bold40white
-		fontColor: black
-		scrollStyle: default
-		listStyle: default
-	}
-}
 com.badlogic.gdx.scenes.scene2d.ui.Slider$SliderStyle: {
 	default-horizontal: {
 		background: slider-horizontal
@@ -205,24 +155,6 @@ com.badlogic.gdx.scenes.scene2d.ui.SplitPane$SplitPaneStyle: {
 	}
 	default-vertical: {
 		handle: vertical-split-pane
-	}
-}
-com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
-	default: {
-		font: Play-Bold40white
-		fontColor: black
-		up: round-gray
-		down: round-dark-gray
-		over: round-light-gray
-	}
-}
-com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
-	default: {
-		font: Play-Bold40white
-		fontColor: black
-		background: textfield
-		cursor: cursor
-		selection: gray
 	}
 }
 com.badlogic.gdx.scenes.scene2d.ui.TextTooltip$TextTooltipStyle: {
