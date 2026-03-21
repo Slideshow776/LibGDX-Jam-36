@@ -25,6 +25,7 @@ public class LevelScreen extends BaseScreen {
     private static final int CHUNKS_TO_KEEP_BELOW_BALL = 4;
     private static final float BALL_LAUNCH_SPEED = 30f;
     private static final float BALL_MIN_UPWARD = 10.75f;
+    private static final float SIZE_STEP = 1f;
 
     private Ball ball;
     private World world;
@@ -59,7 +60,7 @@ public class LevelScreen extends BaseScreen {
 
         failureBottomY = chunks.first().getBottomY();
 
-        ball = new Ball(world, chunkWidth * .5f, 1000f, 64f, 64f, Material.GUM, mainStage);
+        ball = new Ball(world, chunkWidth * .5f, 1000f, 96, 96, Material.GUM, mainStage);
         startBallY = ball.getY();
         highestBallY = startBallY;
         coinCount = 0;
@@ -67,7 +68,7 @@ public class LevelScreen extends BaseScreen {
         launchBallDiagonally();
         updateStatsLabel();
 
-        this.camera.zoom = 1.0f;
+        this.camera.zoom = 1.8f;
         mainStage.getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
     }
 
@@ -84,6 +85,48 @@ public class LevelScreen extends BaseScreen {
 
     @Override
     public void update(float delta) {
+        boolean plusPressed = Gdx.input.isKeyPressed(Input.Keys.PLUS)
+            || Gdx.input.isKeyPressed(Input.Keys.EQUALS)
+            || Gdx.input.isKeyPressed(Input.Keys.NUMPAD_ADD);
+
+        boolean minusPressed = Gdx.input.isKeyPressed(Input.Keys.MINUS)
+            || Gdx.input.isKeyPressed(Input.Keys.NUMPAD_SUBTRACT);
+
+        if (Gdx.input.isKeyPressed(Input.Keys.C) && plusPressed) {
+            for (int i = 0; i < chunks.size; i++) {
+                chunks.get(i).adjustCoinSizes(SIZE_STEP);
+            }
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.C) && minusPressed) {
+            for (int i = 0; i < chunks.size; i++) {
+                chunks.get(i).adjustCoinSizes(-SIZE_STEP);
+            }
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.F) && plusPressed) {
+            for (int i = 0; i < chunks.size; i++) {
+                chunks.get(i).adjustBumperSizes(SIZE_STEP);
+            }
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.F) && minusPressed) {
+            for (int i = 0; i < chunks.size; i++) {
+                chunks.get(i).adjustBumperSizes(-SIZE_STEP);
+            }
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.H) && plusPressed) {
+            for (int i = 0; i < chunks.size; i++) {
+                chunks.get(i).adjustCliffSizes(SIZE_STEP);
+            }
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.H) && minusPressed) {
+            for (int i = 0; i < chunks.size; i++) {
+                chunks.get(i).adjustCliffSizes(-SIZE_STEP);
+            }
+        }
+
         if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
             Vector2 mouse = new Vector2(Gdx.input.getX(), Gdx.input.getY());
             mainStage.screenToStageCoordinates(mouse);

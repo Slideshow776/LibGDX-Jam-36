@@ -32,24 +32,7 @@ public class Ball extends PhysicsActor {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        batch.draw(
-            getTexture(),
-            getX(),
-            getY(),
-            getWidth() * 0.5f,
-            getHeight() * 0.5f,
-            getWidth(),
-            getHeight(),
-            getScaleX(),
-            getScaleY(),
-            getRotation(),
-            0,
-            0,
-            getTexture().getWidth(),
-            getTexture().getHeight(),
-            false,
-            false
-        );
+        batch.draw(getTexture(), getX(), getY(), getWidth() * 0.5f, getHeight() * 0.5f, getWidth(), getHeight(), getScaleX(), getScaleY(), getRotation(), 0, 0, getTexture().getWidth(), getTexture().getHeight(), false, false);
     }
 
     @Override
