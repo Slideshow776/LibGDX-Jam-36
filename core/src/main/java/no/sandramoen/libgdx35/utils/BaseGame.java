@@ -47,7 +47,7 @@ public abstract class BaseGame extends Game implements AssetErrorListener {
         new AssetLoader();
 
         Pixmap pixmap = new Pixmap(Gdx.files.internal("images/excluded/cursor.png"));
-        Cursor cursor = Gdx.graphics.newCursor(pixmap, 15, 15);
+        Cursor cursor = Gdx.graphics.newCursor(pixmap, 0, 0);
         pixmap.dispose();
         Gdx.graphics.setCursor(cursor);
     }
