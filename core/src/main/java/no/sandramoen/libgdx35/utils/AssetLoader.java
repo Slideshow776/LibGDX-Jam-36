@@ -28,7 +28,9 @@ public class AssetLoader implements AssetErrorListener {
     public static Sound new_letters_sound;
 
     public static Array<Music> music;
-    //public static Music levelMusic;
+    public static Music levelMusic;
+    public static Music introMusic;
+    public static Music endMusic;
 
 
     static {
@@ -63,7 +65,9 @@ public class AssetLoader implements AssetErrorListener {
         no.sandramoen.libgdx35.utils.BaseGame.assetManager.load("images/included/packed/images.pack.atlas", TextureAtlas.class);
 
         // music
-        //BaseGame.assetManager.load("audio/music/744138__thelastoneonearth__epic-middle-east-theme.ogg", Music.class);
+        BaseGame.assetManager.load("audio/music/818285__xantherock__flash-animation-intro.mp3", Music.class);
+        BaseGame.assetManager.load("audio/music/648562__xantherock__goofy-type-beat.mp3", Music.class);
+        BaseGame.assetManager.load("audio/music/649935__xantherock__uh-oh.mp3", Music.class);
 
         // sounds
         //no.sandramoen.libgdx35.utils.BaseGame.assetManager.load("audio/sounds/191511__hitrison__quick-chain-drops.wav", Sound.class);
@@ -92,9 +96,13 @@ public class AssetLoader implements AssetErrorListener {
         textureAtlas = no.sandramoen.libgdx35.utils.BaseGame.assetManager.get("images/included/packed/images.pack.atlas");
 
         // music
-        //music = new Array();
-        //levelMusic = BaseGame.assetManager.get("audio/music/744138__thelastoneonearth__epic-middle-east-theme.ogg", Music.class);
-        //music.add(levelMusic);
+        music = new Array();
+        introMusic = BaseGame.assetManager.get("audio/music/818285__xantherock__flash-animation-intro.mp3", Music.class);
+        levelMusic = BaseGame.assetManager.get("audio/music/648562__xantherock__goofy-type-beat.mp3", Music.class);
+        endMusic = BaseGame.assetManager.get("audio/music/649935__xantherock__uh-oh.mp3", Music.class);
+        music.add(introMusic);
+        music.add(levelMusic);
+        music.add(endMusic);
 
         // sounds
         //new_letters_sound = no.sandramoen.libgdx35.utils.BaseGame.assetManager.get("audio/sounds/191511__hitrison__quick-chain-drops.wav", Sound.class);
