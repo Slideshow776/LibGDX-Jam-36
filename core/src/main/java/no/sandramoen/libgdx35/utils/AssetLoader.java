@@ -25,7 +25,10 @@ public class AssetLoader implements AssetErrorListener {
     public static String shockwaveShader;
     public static String backgroundShader;
 
-    public static Sound new_letters_sound;
+    public static Sound coin_sound;
+    public static Sound metal_sound;
+    public static Sound glass_sound;
+    public static Sound gum_sound;
 
     public static Array<Music> music;
     public static Music levelMusic;
@@ -70,7 +73,10 @@ public class AssetLoader implements AssetErrorListener {
         BaseGame.assetManager.load("audio/music/649935__xantherock__uh-oh.mp3", Music.class);
 
         // sounds
-        //no.sandramoen.libgdx35.utils.BaseGame.assetManager.load("audio/sounds/191511__hitrison__quick-chain-drops.wav", Sound.class);
+        no.sandramoen.libgdx35.utils.BaseGame.assetManager.load("audio/sounds/535890__jerimee__coin-jump.wav", Sound.class);
+        no.sandramoen.libgdx35.utils.BaseGame.assetManager.load("audio/sounds/171246__oddworld__metalclank2.wav", Sound.class);
+        no.sandramoen.libgdx35.utils.BaseGame.assetManager.load("audio/sounds/255658__spectral9__wine-glass-hit-b4.wav", Sound.class);
+        no.sandramoen.libgdx35.utils.BaseGame.assetManager.load("audio/sounds/536765__egomassive__squish.wav", Sound.class);
 
         // i18n
 
@@ -105,7 +111,10 @@ public class AssetLoader implements AssetErrorListener {
         music.add(endMusic);
 
         // sounds
-        //new_letters_sound = no.sandramoen.libgdx35.utils.BaseGame.assetManager.get("audio/sounds/191511__hitrison__quick-chain-drops.wav", Sound.class);
+        coin_sound = no.sandramoen.libgdx35.utils.BaseGame.assetManager.get("audio/sounds/535890__jerimee__coin-jump.wav", Sound.class);
+        metal_sound = no.sandramoen.libgdx35.utils.BaseGame.assetManager.get("audio/sounds/171246__oddworld__metalclank2.wav", Sound.class);
+        glass_sound = no.sandramoen.libgdx35.utils.BaseGame.assetManager.get("audio/sounds/255658__spectral9__wine-glass-hit-b4.wav", Sound.class);
+        gum_sound = no.sandramoen.libgdx35.utils.BaseGame.assetManager.get("audio/sounds/536765__egomassive__squish.wav", Sound.class);
 
         // i18n
 
@@ -127,7 +136,7 @@ public class AssetLoader implements AssetErrorListener {
     }
 
     private static void loadFonts() {
-        float scale = Gdx.graphics.getWidth() * .05f; // magic number ensures scale ~= 1, based on screen width
+        float scale = Gdx.graphics.getWidth() * .025f; // magic number ensures scale ~= 1, based on screen width
         scale *= 1.01f; // make x percent bigger, bigger = more fuzzy
 
         mySkin.get("Fredoka20white", Font.class).scale(scale);

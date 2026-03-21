@@ -86,10 +86,10 @@ public class LevelScreen extends BaseScreen {
         AssetLoader.levelMusic.setVolume(0f);
         AssetLoader.levelMusic.play();
 
-        AssetLoader.introMusic.setVolume(BaseGame.soundVolume);
+        AssetLoader.introMusic.setVolume(BaseGame.musicVolume);
         AssetLoader.introMusic.play();
 
-        AssetLoader.endMusic.setVolume(BaseGame.soundVolume);
+        AssetLoader.endMusic.setVolume(BaseGame.musicVolume);
 
         // backgrounds
         updateBackgrounds();
@@ -205,7 +205,7 @@ public class LevelScreen extends BaseScreen {
                 !AssetLoader.endMusic.isPlaying() &&
                 AssetLoader.levelMusic.getVolume() == 0
         ) {
-            AssetLoader.levelMusic.setVolume(BaseGame.soundVolume);
+            AssetLoader.levelMusic.setVolume(BaseGame.musicVolume);
         }
     }
 
@@ -243,6 +243,7 @@ public class LevelScreen extends BaseScreen {
                 if (ballBounds.overlaps(coinBounds)) {
                     chunk.removeCoin(coin);
                     coinCount++;
+                    AssetLoader.coin_sound.play(BaseGame.soundVolume, MathUtils.random(0.9f, 1.1f), 0f);
                 }
             }
         }
