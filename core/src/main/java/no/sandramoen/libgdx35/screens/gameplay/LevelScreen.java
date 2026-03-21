@@ -2,20 +2,15 @@ package no.sandramoen.libgdx35.screens.gameplay;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
-import com.github.tommyettinger.textra.Styles;
 import com.github.tommyettinger.textra.TextraLabel;
-
 import no.sandramoen.libgdx35.actors.pinball.*;
 import no.sandramoen.libgdx35.utils.AssetLoader;
 import no.sandramoen.libgdx35.utils.BaseScreen;
@@ -26,6 +21,10 @@ public class LevelScreen extends BaseScreen {
     private static final float BALL_LAUNCH_SPEED = 30f;
     private static final float BALL_MIN_UPWARD = 10.75f;
     private static final float SIZE_STEP = 1f;
+    private static final int BACKGROUND_TILE_COUNT = 6;
+
+    private Texture backgroundTexture;
+    private Array<Image> backgrounds;
 
     private Ball ball;
     private World world;
@@ -43,9 +42,19 @@ public class LevelScreen extends BaseScreen {
 
     @Override
     public void initialize() {
+        this.backgrounds = new Array<>();
+        this.backgroundTexture = new Texture(Gdx.files.internal("images/included/background.png"));
+
         chunks = new Array<>();
         world = new World(new Vector2(0f, -24f), true);
         world.setContactListener(new PlatformContactListener());
+
+        for (int i = 0; i < BACKGROUND_TILE_COUNT; i++) {
+            Image bg = new Image(backgroundTexture);
+            backgrounds.add(bg);
+            mainStage.addActor(bg);
+            bg.toBack();
+        }
 
         statsLabel = new TextraLabel("0", AssetLoader.getLabelStyle("Fredoka20white"));
         statsLabel.setPosition(20f, Gdx.graphics.getHeight() - 70f);
@@ -70,6 +79,8 @@ public class LevelScreen extends BaseScreen {
 
         this.camera.zoom = 1.8f;
         mainStage.getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+
+        updateBackgrounds();
     }
 
     @Override
@@ -171,8 +182,30 @@ public class LevelScreen extends BaseScreen {
         cam.position.y += (ball.getY() - cam.position.y) * 0.08f;
         cam.update();
 
+        updateBackgrounds();
+
         for (int i = 0; i < chunks.size; i++) {
             chunks.get(i).extendWallsToCamera(cam, viewport.getWorldWidth());
+        }
+    }
+
+    private void updateBackgrounds() {
+        OrthographicCamera cam = (OrthographicCamera) mainStage.getCamera();
+
+        float worldWidth = viewport.getWorldWidth() * cam.zoom;
+        float worldHeight = viewport.getWorldHeight() * cam.zoom;
+
+        float scale = worldWidth / backgroundTexture.getWidth();
+        float tileHeight = backgroundTexture.getHeight() * scale;
+
+        float startY = cam.position.y - worldHeight * 0.5f;
+        float baseY = (float) Math.floor(startY / tileHeight) * tileHeight;
+
+        for (int i = 0; i < backgrounds.size; i++) {
+            Image bg = backgrounds.get(i);
+            bg.setSize(worldWidth, tileHeight);
+            bg.setPosition(cam.position.x - worldWidth * 0.5f, baseY + i * tileHeight);
+            bg.toBack();
         }
     }
 
@@ -232,6 +265,8 @@ public class LevelScreen extends BaseScreen {
         cam.position.y = spawnY;
         cam.update();
 
+        updateBackgrounds();
+
         for (int i = 0; i < chunks.size; i++) {
             chunks.get(i).extendWallsToCamera(cam, viewport.getWorldWidth());
         }
@@ -267,6 +302,9 @@ public class LevelScreen extends BaseScreen {
     @Override
     public void dispose() {
         super.dispose();
+        if (backgroundTexture != null) {
+            backgroundTexture.dispose();
+        }
         world.dispose();
     }
 }
