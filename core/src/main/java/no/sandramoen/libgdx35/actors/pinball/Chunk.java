@@ -9,17 +9,17 @@ import no.sandramoen.libgdx35.utils.BaseActor;
 
 public class Chunk {
 
-    private static final float CLIFF_WALL_INSET = 17f;
-    private static final float WALL_CHUNK_OVERLAP = 24f;
-    private static final float WALL_VISIBLE_WIDTH = 5f;
-    private static final float START_Y_OFFSET = 180f;
-    private static final float INITIAL_BUMPER_WIDTH = 212f;
-    private static final float INITIAL_BUMPER_HEIGHT = 64f;
-    private static final float INITIAL_CLIFF_WIDTH = 128f;
-    private static final float INITIAL_CLIFF_HEIGHT = 304f;
+    public static float CLIFF_WALL_INSET = 0;
+    public static float WALL_CHUNK_OVERLAP = 24f;
+    public static float WALL_VISIBLE_WIDTH = 55f;
+    public static float START_Y_OFFSET = 180f;
+    public static float INITIAL_BUMPER_WIDTH = 296f;
+    public static float INITIAL_BUMPER_HEIGHT = 96;
+    public static float INITIAL_CLIFF_WIDTH = 128f;
+    public static float INITIAL_CLIFF_HEIGHT = 304f;
 
-    private static final float COIN_WIDTH = 48f;
-    private static final float COIN_HEIGHT = 48f;
+    public static float COIN_WIDTH = 48f;
+    public static float COIN_HEIGHT = 48f;
     private static final float COIN_PADDING = 18f;
     private static final int MIN_COINS = 5;
     private static final int MAX_COINS = 15;
@@ -32,7 +32,7 @@ public class Chunk {
     private final float y;
     private final float width;
     private final float height;
-    private final float wallThickness = 12f;
+    private final float wallThickness = 64f;
 
     private final Wall leftWall;
     private final Wall rightWall;
@@ -67,11 +67,8 @@ public class Chunk {
         float cameraLeft = camera.position.x - halfViewWidth;
         float cameraRight = camera.position.x + halfViewWidth;
 
-        float leftX = cameraLeft - wallThickness + WALL_VISIBLE_WIDTH;
-        float rightX = cameraRight - WALL_VISIBLE_WIDTH;
-
-        leftWall.setBounds(leftX, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f);
-        rightWall.setBounds(rightX, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f);
+        leftWall.setBounds(cameraLeft, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f);
+        rightWall.setBounds(cameraRight - wallThickness, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f);
         rightWall.setOrigin(rightWall.getWidth() * 0.5f, rightWall.getHeight() * 0.5f);
         rightWall.setScaleX(-1f);
 
@@ -88,6 +85,46 @@ public class Chunk {
         }
     }
 
+    public Array<Cliff> getCliffs() {
+        return cliffs;
+    }
+
+    public void adjustCoinSizes(float amount) {
+        for (int i = 0; i < coins.size; i++) {
+            Coin coin = coins.get(i);
+            float newWidth = Math.max(8f, coin.getWidth() + amount);
+            float newHeight = Math.max(8f, coin.getHeight() + amount);
+            float centerX = coin.getX() + coin.getWidth() * 0.5f;
+            float centerY = coin.getY() + coin.getHeight() * 0.5f;
+            coin.setSize(newWidth, newHeight);
+            coin.setPosition(centerX - newWidth * 0.5f, centerY - newHeight * 0.5f);
+        }
+    }
+
+    public void adjustBumperSizes(float amount) {
+        for (int i = 0; i < bumpers.size; i++) {
+            PlatformBumper bumper = bumpers.get(i);
+            float newWidth = Math.max(24f, bumper.getWidth() + amount);
+            float newHeight = Math.max(12f, bumper.getHeight() + amount);
+            float centerX = bumper.getX() + bumper.getWidth() * 0.5f;
+            float centerY = bumper.getY() + bumper.getHeight() * 0.5f;
+            bumper.setSize(newWidth, newHeight);
+            bumper.setPosition(centerX - newWidth * 0.5f, centerY - newHeight * 0.5f);
+        }
+    }
+
+    public void adjustCliffSizes(float amount) {
+        for (int i = 0; i < cliffs.size; i++) {
+            Cliff cliff = cliffs.get(i);
+            float newWidth = Math.max(24f, cliff.getWidth() + amount);
+            float newHeight = Math.max(24f, cliff.getHeight() + amount);
+            float centerX = cliff.getX() + cliff.getWidth() * 0.5f;
+            float centerY = cliff.getY() + cliff.getHeight() * 0.5f;
+            cliff.setSize(newWidth, newHeight);
+            cliff.setPosition(centerX - newWidth * 0.5f, centerY - newHeight * 0.5f);
+        }
+    }
+
     private void generateBumpersAndCliffs() {
         int rows = MathUtils.random(8, 16);
         float currentY = y + START_Y_OFFSET;
@@ -100,8 +137,8 @@ public class Chunk {
             float leftPadding = getLeftInnerWallX() + INITIAL_CLIFF_WIDTH;
             float rightPadding = getRightInnerWallX() - INITIAL_CLIFF_WIDTH - INITIAL_BUMPER_WIDTH;
             float degreeOffset = MathUtils.random(-10f, 10f);
-            float minReduction = -(INITIAL_BUMPER_WIDTH * 0.25f);
-            float maxIncrease = INITIAL_BUMPER_WIDTH * 0.45f;
+            float minReduction = -(INITIAL_BUMPER_WIDTH);
+            float maxIncrease = INITIAL_BUMPER_WIDTH * 0.30f;
 
             switch (state) {
                 case LEFT_BUMPER:
