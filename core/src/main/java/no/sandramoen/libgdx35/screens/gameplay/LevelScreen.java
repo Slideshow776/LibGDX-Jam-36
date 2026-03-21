@@ -138,9 +138,6 @@ public class LevelScreen extends BaseScreen {
             highestBallY = Math.max(highestBallY, ball.getY());
         }
 
-        if (isPaused())
-            return;
-
         Chunk activeChunk = getChunkForBallY(ball.getY());
         if (activeChunk != null) {
             for (PlatformBumper bumper : activeChunk.getBumpers()) {
