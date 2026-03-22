@@ -19,8 +19,8 @@ import no.sandramoen.libgdx35.utils.BaseScreen;
 public class LevelScreen extends BaseScreen {
 
     private static final int CHUNKS_TO_KEEP_BELOW_BALL = 4;
-    private static final float BALL_LAUNCH_SPEED = 30f;
-    private static final float BALL_MIN_UPWARD = 10.75f;
+    private static final float BALL_LAUNCH_SPEED = 40f;
+    private static final float BALL_MIN_UPWARD = 20.75f;
     private static final float SIZE_STEP = 1f;
     private static final int BACKGROUND_TILE_COUNT = 6;
 
