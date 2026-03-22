@@ -9,13 +9,7 @@ import no.sandramoen.libgdx35.utils.BaseGame;
 
 public class PlatformContactListener implements ContactListener {
     @Override
-    public void beginContact(Contact contact) {}
-
-    @Override
-    public void endContact(Contact contact) {}
-
-    @Override
-    public void preSolve(Contact contact, Manifold oldManifold) {
+    public void beginContact(Contact contact) {
         Fixture a = contact.getFixtureA();
         Fixture b = contact.getFixtureB();
 
@@ -51,13 +45,62 @@ public class PlatformContactListener implements ContactListener {
 
             if (material != null) {
                 if (material == Material.METAL)
-                    AssetLoader.metal_sound.play(BaseGame.soundVolume, MathUtils.random(0.8f, 1.2f), 0f);
+                    AssetLoader.metal_sound.play(BaseGame.soundVolume * 0.5f, MathUtils.random(0.8f, 1.2f), 0f);
                 else if (material == Material.GLASS)
-                    AssetLoader.glass_sound.play(BaseGame.soundVolume, MathUtils.random(0.8f, 1.2f), 0f);
+                    AssetLoader.glass_sound.play(BaseGame.soundVolume * 0.5f, MathUtils.random(0.8f, 1.2f), 0f);
                 else if (material == Material.GUM)
-                    AssetLoader.gum_sound.play(BaseGame.soundVolume, MathUtils.random(0.8f, 1.2f), 0f);
+                    AssetLoader.gum_sound.play(BaseGame.soundVolume * 0.5f, MathUtils.random(0.8f, 1.2f), 0f);
             }
         }
+    }
+
+    @Override
+    public void endContact(Contact contact) {}
+
+    @Override
+    public void preSolve(Contact contact, Manifold oldManifold) {
+        Fixture a = contact.getFixtureA();
+        Fixture b = contact.getFixtureB();
+
+        Object ua = a.getBody().getUserData();
+        Object ub = b.getBody().getUserData();
+
+        Ball ball = null;
+        Object other = null;
+        if (ua instanceof Ball) {
+            ball = (Ball) ua;
+            ball.setMaterial(((PhysicsActor) ub).getMaterial());
+            other = ub;
+        } else if (ub instanceof Ball) {
+            ball = (Ball) ub;
+            ball.setMaterial(((PhysicsActor) ua).getMaterial());
+            other = ua;
+        }
+
+        if (ball == null)
+            return;
+
+        /*if (other != null) {
+            Material material = null;
+            if (other instanceof Wall) {
+                material = ((Wall) other).getMaterial();
+            }
+            else if (other instanceof PlatformBumper) {
+                material = ((PlatformBumper) other).getMaterial();
+            }
+            else if (other instanceof Cliff) {
+                material = ((Cliff) other).getMaterial();
+            }
+
+            if (material != null) {
+                if (material == Material.METAL)
+                    AssetLoader.metal_sound.play(BaseGame.soundVolume * 0.5f, MathUtils.random(0.8f, 1.2f), 0f);
+                else if (material == Material.GLASS)
+                    AssetLoader.glass_sound.play(BaseGame.soundVolume * 0.5f, MathUtils.random(0.8f, 1.2f), 0f);
+                else if (material == Material.GUM)
+                    AssetLoader.gum_sound.play(BaseGame.soundVolume * 0.5f, MathUtils.random(0.8f, 1.2f), 0f);
+            }
+        }*/
 
         WorldManifold manifold = contact.getWorldManifold();
         Vector2[] points = manifold.getPoints();

@@ -32,7 +32,7 @@ public class Chunk {
     private final float y;
     private final float width;
     private final float height;
-    private final float wallThickness = 64f;
+    private final float wallThickness = 64f + 32;
 
     private final Wall leftWall;
     private final Wall rightWall;
@@ -64,8 +64,8 @@ public class Chunk {
 
     public void extendWallsToCamera(OrthographicCamera camera, float viewportWorldWidth) {
         float halfViewWidth = viewportWorldWidth * camera.zoom * 0.5f;
-        float cameraLeft = camera.position.x - halfViewWidth;
-        float cameraRight = camera.position.x + halfViewWidth;
+        float cameraLeft = camera.position.x - halfViewWidth - 16;
+        float cameraRight = camera.position.x + halfViewWidth + 16;
 
         leftWall.setBounds(cameraLeft, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f);
         rightWall.setBounds(cameraRight - wallThickness, y - WALL_CHUNK_OVERLAP, wallThickness, height + WALL_CHUNK_OVERLAP * 2f);
