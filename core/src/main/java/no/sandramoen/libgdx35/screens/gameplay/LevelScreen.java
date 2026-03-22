@@ -108,58 +108,6 @@ public class LevelScreen extends BaseScreen {
 
     @Override
     public void update(float delta) {
-        boolean plusPressed = Gdx.input.isKeyPressed(Input.Keys.PLUS)
-            || Gdx.input.isKeyPressed(Input.Keys.EQUALS)
-            || Gdx.input.isKeyPressed(Input.Keys.NUMPAD_ADD);
-
-        boolean minusPressed = Gdx.input.isKeyPressed(Input.Keys.MINUS)
-            || Gdx.input.isKeyPressed(Input.Keys.NUMPAD_SUBTRACT);
-
-        if (Gdx.input.isKeyPressed(Input.Keys.C) && plusPressed) {
-            for (int i = 0; i < chunks.size; i++) {
-                chunks.get(i).adjustCoinSizes(SIZE_STEP);
-            }
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.C) && minusPressed) {
-            for (int i = 0; i < chunks.size; i++) {
-                chunks.get(i).adjustCoinSizes(-SIZE_STEP);
-            }
-        }
-
-        if (Gdx.input.isKeyPressed(Input.Keys.F) && plusPressed) {
-            for (int i = 0; i < chunks.size; i++) {
-                chunks.get(i).adjustBumperSizes(SIZE_STEP);
-            }
-        }
-
-        if (Gdx.input.isKeyPressed(Input.Keys.F) && minusPressed) {
-            for (int i = 0; i < chunks.size; i++) {
-                chunks.get(i).adjustBumperSizes(-SIZE_STEP);
-            }
-        }
-
-        if (Gdx.input.isKeyPressed(Input.Keys.H) && plusPressed) {
-            for (int i = 0; i < chunks.size; i++) {
-                chunks.get(i).adjustCliffSizes(SIZE_STEP);
-            }
-        }
-
-        if (Gdx.input.isKeyPressed(Input.Keys.H) && minusPressed) {
-            for (int i = 0; i < chunks.size; i++) {
-                chunks.get(i).adjustCliffSizes(-SIZE_STEP);
-            }
-        }
-
-        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
-            Vector2 mouse = new Vector2(Gdx.input.getX(), Gdx.input.getY());
-            mainStage.screenToStageCoordinates(mouse);
-
-            ball.setPosition(mouse.x, mouse.y);
-            ball.getBody().setLinearVelocity(0f, 0f);
-            ball.getBody().setAngularVelocity(0f);
-
-            highestBallY = Math.max(highestBallY, ball.getY());
-        }
 
         Chunk activeChunk = getChunkForBallY(ball.getY());
         if (activeChunk != null) {

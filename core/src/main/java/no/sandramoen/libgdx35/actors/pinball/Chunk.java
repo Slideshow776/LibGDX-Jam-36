@@ -13,13 +13,13 @@ public class Chunk {
     public static float WALL_CHUNK_OVERLAP = 24f;
     public static float WALL_VISIBLE_WIDTH = 55f;
     public static float START_Y_OFFSET = 180f;
-    public static float INITIAL_BUMPER_WIDTH = 296f;
-    public static float INITIAL_BUMPER_HEIGHT = 96;
-    public static float INITIAL_CLIFF_WIDTH = 128f;
-    public static float INITIAL_CLIFF_HEIGHT = 304f;
+    public static float INITIAL_BUMPER_WIDTH = 304f;
+    public static float INITIAL_BUMPER_HEIGHT = 104;
+    public static float INITIAL_CLIFF_WIDTH = 190f;
+    public static float INITIAL_CLIFF_HEIGHT = 390f;
 
-    public static float COIN_WIDTH = 48f;
-    public static float COIN_HEIGHT = 48f;
+    public static float COIN_WIDTH = 53f;
+    public static float COIN_HEIGHT = 53f;
     private static final float COIN_PADDING = 18f;
     private static final int MIN_COINS = 5;
     private static final int MAX_COINS = 15;
