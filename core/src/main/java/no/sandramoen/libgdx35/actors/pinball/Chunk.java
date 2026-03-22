@@ -85,115 +85,6 @@ public class Chunk {
         }
     }
 
-    public Array<Cliff> getCliffs() {
-        return cliffs;
-    }
-
-    public void adjustCoinSizes(float amount) {
-        for (int i = 0; i < coins.size; i++) {
-            Coin coin = coins.get(i);
-            float newWidth = Math.max(8f, coin.getWidth() + amount);
-            float newHeight = Math.max(8f, coin.getHeight() + amount);
-            float centerX = coin.getX() + coin.getWidth() * 0.5f;
-            float centerY = coin.getY() + coin.getHeight() * 0.5f;
-            coin.setSize(newWidth, newHeight);
-            coin.setPosition(centerX - newWidth * 0.5f, centerY - newHeight * 0.5f);
-        }
-
-        printCoinAverages();
-    }
-
-    public void adjustBumperSizes(float amount) {
-        for (int i = 0; i < bumpers.size; i++) {
-            PlatformBumper bumper = bumpers.get(i);
-            float newWidth = Math.max(24f, bumper.getWidth() + amount);
-            float newHeight = Math.max(12f, bumper.getHeight() + amount);
-            float centerX = bumper.getX() + bumper.getWidth() * 0.5f;
-            float centerY = bumper.getY() + bumper.getHeight() * 0.5f;
-            bumper.setSize(newWidth, newHeight);
-            bumper.setPosition(centerX - newWidth * 0.5f, centerY - newHeight * 0.5f);
-        }
-
-        printBumperAverages();
-    }
-
-    public void adjustCliffSizes(float amount) {
-        for (int i = 0; i < cliffs.size; i++) {
-            Cliff cliff = cliffs.get(i);
-            float newWidth = Math.max(24f, cliff.getWidth() + amount);
-            float newHeight = Math.max(24f, cliff.getHeight() + amount);
-            float centerX = cliff.getX() + cliff.getWidth() * 0.5f;
-            float centerY = cliff.getY() + cliff.getHeight() * 0.5f;
-            cliff.setSize(newWidth, newHeight);
-            cliff.setPosition(centerX - newWidth * 0.5f, centerY - newHeight * 0.5f);
-        }
-
-        printCliffAverages();
-    }
-
-    private void printCoinAverages() {
-        if (coins.size == 0) {
-            System.out.println("Coins -> avg width: 0, avg height: 0");
-            return;
-        }
-
-        float totalWidth = 0f;
-        float totalHeight = 0f;
-
-        for (int i = 0; i < coins.size; i++) {
-            Coin coin = coins.get(i);
-            totalWidth += coin.getWidth();
-            totalHeight += coin.getHeight();
-        }
-
-        System.out.println(
-            "Coins -> avg width: " + (totalWidth / coins.size) +
-                ", avg height: " + (totalHeight / coins.size)
-        );
-    }
-
-    private void printBumperAverages() {
-        if (bumpers.size == 0) {
-            System.out.println("Bumpers -> avg width: 0, avg height: 0");
-            return;
-        }
-
-        float totalWidth = 0f;
-        float totalHeight = 0f;
-
-        for (int i = 0; i < bumpers.size; i++) {
-            PlatformBumper bumper = bumpers.get(i);
-            totalWidth += bumper.getWidth();
-            totalHeight += bumper.getHeight();
-        }
-
-        System.out.println(
-            "Bumpers -> avg width: " + (totalWidth / bumpers.size) +
-                ", avg height: " + (totalHeight / bumpers.size)
-        );
-    }
-
-    private void printCliffAverages() {
-        if (cliffs.size == 0) {
-            System.out.println("Cliffs -> avg width: 0, avg height: 0");
-            return;
-        }
-
-        float totalWidth = 0f;
-        float totalHeight = 0f;
-
-        for (int i = 0; i < cliffs.size; i++) {
-            Cliff cliff = cliffs.get(i);
-            totalWidth += cliff.getWidth();
-            totalHeight += cliff.getHeight();
-        }
-
-        System.out.println(
-            "Cliffs -> avg width: " + (totalWidth / cliffs.size) +
-                ", avg height: " + (totalHeight / cliffs.size)
-        );
-    }
-
     private void generateBumpersAndCliffs() {
         int rows = MathUtils.random(8, 16);
         float currentY = y + START_Y_OFFSET;
@@ -206,8 +97,8 @@ public class Chunk {
             float leftPadding = getLeftInnerWallX() + INITIAL_CLIFF_WIDTH;
             float rightPadding = getRightInnerWallX() - INITIAL_CLIFF_WIDTH - INITIAL_BUMPER_WIDTH;
             float degreeOffset = MathUtils.random(-10f, 10f);
-            float minReduction = -(INITIAL_BUMPER_WIDTH);
-            float maxIncrease = INITIAL_BUMPER_WIDTH * 0.30f;
+            float minReduction = -(INITIAL_BUMPER_WIDTH)*1.4f;
+            float maxIncrease = INITIAL_BUMPER_WIDTH * 0.1f;
 
             switch (state) {
                 case LEFT_BUMPER:

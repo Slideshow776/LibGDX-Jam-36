@@ -142,7 +142,6 @@ public abstract class BaseScreen implements Screen, InputProcessor {
 
     @Override
     public boolean scrolled(float amountX, float amountY) {
-        camera.zoom = MathUtils.clamp(camera.zoom + amountY * 0.05f, 0.5f, 3f);
         return false;
     }
 

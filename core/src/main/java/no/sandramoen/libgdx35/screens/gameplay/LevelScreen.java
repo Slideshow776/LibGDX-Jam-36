@@ -2,6 +2,7 @@ package no.sandramoen.libgdx35.screens.gameplay;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.MathUtils;
@@ -21,8 +22,16 @@ public class LevelScreen extends BaseScreen {
     private static final int CHUNKS_TO_KEEP_BELOW_BALL = 4;
     private static final float BALL_LAUNCH_SPEED = 40f;
     private static final float BALL_MIN_UPWARD = 20.75f;
-    private static final float SIZE_STEP = 1f;
     private static final int BACKGROUND_TILE_COUNT = 6;
+
+    private static final float FLIP_WINDOW = 1.0f;
+    private static final int FLIP_LIMIT = 6;
+    private static final float FLIPPER_COOLDOWN_DURATION = 2.0f;
+
+    private float bumperFlipCount;
+    private float bumperFlipTime;
+    private float flipperCooldownTimer;
+    private float cooldownFlashTimer;
 
     private Texture backgroundTexture;
     private Array<Image> backgrounds;
@@ -39,6 +48,7 @@ public class LevelScreen extends BaseScreen {
     private float highestBallY;
 
     private TextraLabel statsLabel;
+    private TextraLabel cooldownLabel;
     private int coinCount;
 
     @Override
@@ -61,6 +71,11 @@ public class LevelScreen extends BaseScreen {
         statsLabel.setPosition(20f, Gdx.graphics.getHeight() - 70f);
         uiTable.add(statsLabel).expand().center().top();
 
+        cooldownLabel = new TextraLabel("FLIPPERS ON COOLDOWN", AssetLoader.getLabelStyle("Fredoka20white"));
+        cooldownLabel.setColor(Color.RED);
+        cooldownLabel.setVisible(false);
+        uiStage.addActor(cooldownLabel);
+
         chunkWidth = Gdx.graphics.getWidth();
         chunkHeight = 2000f;
 
@@ -81,7 +96,6 @@ public class LevelScreen extends BaseScreen {
         this.camera.zoom = 1.8f;
         mainStage.getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
 
-        // music
         AssetLoader.levelMusic.setLooping(true);
         AssetLoader.levelMusic.setVolume(0f);
         AssetLoader.levelMusic.play();
@@ -91,8 +105,8 @@ public class LevelScreen extends BaseScreen {
 
         AssetLoader.endMusic.setVolume(BaseGame.musicVolume);
 
-        // backgrounds
         updateBackgrounds();
+        updateCooldownLabel();
     }
 
     @Override
@@ -108,14 +122,44 @@ public class LevelScreen extends BaseScreen {
 
     @Override
     public void update(float delta) {
+        bumperFlipTime += delta;
+        if (bumperFlipTime > FLIP_WINDOW) {
+            bumperFlipTime = 0f;
+            bumperFlipCount = 0f;
+        }
+
+        if (flipperCooldownTimer > 0f) {
+            flipperCooldownTimer -= delta;
+            if (flipperCooldownTimer < 0f) {
+                flipperCooldownTimer = 0f;
+            }
+            cooldownFlashTimer += delta;
+        } else {
+            cooldownFlashTimer = 0f;
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT) || Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
+            if (flipperCooldownTimer <= 0f) {
+                bumperFlipCount++;
+                if (bumperFlipCount >= FLIP_LIMIT) {
+                    flipperCooldownTimer = FLIPPER_COOLDOWN_DURATION;
+                    bumperFlipCount = 0f;
+                    bumperFlipTime = 0f;
+                }
+            }
+        }
+
+        updateCooldownLabel();
 
         Chunk activeChunk = getChunkForBallY(ball.getY());
         if (activeChunk != null) {
+            boolean allowFlippers = flipperCooldownTimer <= 0f;
+
             for (PlatformBumper bumper : activeChunk.getBumpers()) {
                 if (bumper.isLeft()) {
-                    bumper.setRaised(Gdx.input.isKeyPressed(Input.Keys.LEFT));
+                    bumper.setRaised(allowFlippers && Gdx.input.isKeyPressed(Input.Keys.LEFT));
                 } else {
-                    bumper.setRaised(Gdx.input.isKeyPressed(Input.Keys.RIGHT));
+                    bumper.setRaised(allowFlippers && Gdx.input.isKeyPressed(Input.Keys.RIGHT));
                 }
             }
         }
@@ -148,13 +192,24 @@ public class LevelScreen extends BaseScreen {
             chunks.get(i).extendWallsToCamera(cam, viewport.getWorldWidth());
         }
 
-        if (
-                !AssetLoader.introMusic.isPlaying() &&
-                !AssetLoader.endMusic.isPlaying() &&
-                AssetLoader.levelMusic.getVolume() == 0
-        ) {
+        if (!AssetLoader.introMusic.isPlaying() && !AssetLoader.endMusic.isPlaying() && AssetLoader.levelMusic.getVolume() == 0) {
             AssetLoader.levelMusic.setVolume(BaseGame.musicVolume);
         }
+    }
+
+    private void updateCooldownLabel() {
+        boolean onCooldown = flipperCooldownTimer > 0f;
+        cooldownLabel.setVisible(onCooldown);
+
+        if (!onCooldown) {
+            return;
+        }
+
+        float alpha = 0.35f + 0.65f * Math.abs(MathUtils.sin(cooldownFlashTimer * 10f));
+        cooldownLabel.setColor(1f, 0f, 0f, alpha);
+        cooldownLabel.setText("FLIPPERS ON COOLDOWN, STOP SPAMMING!");
+        cooldownLabel.pack();
+        cooldownLabel.setPosition((uiStage.getWidth() - cooldownLabel.getWidth()) * 0.5f, (uiStage.getHeight() - cooldownLabel.getHeight()) * 0.5f);
     }
 
     private void updateBackgrounds() {
@@ -233,6 +288,12 @@ public class LevelScreen extends BaseScreen {
         AssetLoader.introMusic.stop();
         AssetLoader.levelMusic.setVolume(0f);
         AssetLoader.endMusic.play();
+
+        flipperCooldownTimer = 0f;
+        bumperFlipCount = 0f;
+        bumperFlipTime = 0f;
+        cooldownFlashTimer = 0f;
+        updateCooldownLabel();
 
         OrthographicCamera cam = (OrthographicCamera) mainStage.getCamera();
         cam.position.y = spawnY;
